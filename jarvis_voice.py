@@ -1,52 +1,78 @@
-import speech_recognition as sr
-
-from brain import ask_jarvis
+from listener import listen
 from voice import speak
 from commands import run_command
+from brain import ask_jarvis
+from startup_assistant import startup_message
 
-recognizer = sr.Recognizer()
+import time
 
-speak("Jarvis online")
+print("Jarvis Online")
+
+speak(startup_message())
+
+wake_words = [
+    "jarvis",
+    "hey jarvis"
+]
 
 while True:
 
-    with sr.Microphone() as source:
+    print("\nWaiting for wake word...")
 
-        print("Listening...")
+    query = listen()
 
-        recognizer.adjust_for_ambient_noise(source, duration=0.5)
+    if not query:
+        continue
 
-        audio = recognizer.listen(source)
+    print("Wake Word Heard:", query)
 
-    try:
+    if not any(
+        word in query
+        for word in wake_words
+    ):
+        continue
 
-        query = recognizer.recognize_google(audio)
+    speak("Yes Ujjale")
 
-        print(f"\nYou: {query}")
+    time.sleep(1)
 
-        if query.lower() == "exit":
+    print("Waiting for command...")
 
-            speak("Goodbye")
-            break
+    command = listen()
 
-        # Run commands first
-        result = run_command(query)
+    if not command:
+        continue
 
-        if result:
+    print("Command:", command)
 
-            print(f"\nJarvis: {result}")
+    if command in [
+        "exit",
+        "quit",
+        "goodbye"
+    ]:
 
-            speak(result)
+        speak("Goodbye")
+        break
 
-            continue
+    result = run_command(command)
 
-        # Otherwise ask AI
-        answer = ask_jarvis(query)
+    if result:
 
-        print(f"\nJarvis: {answer}")
+        print("Jarvis:", result)
 
-        speak(answer)
+        speak(result)
 
-    except Exception as e:
+        continue
 
-        print("Error:", e)
+    answer = ask_jarvis(command)
+
+    answer = str(answer)
+
+    if "</think>" in answer:
+        answer = answer.split("</think>")[-1]
+
+    answer = answer.strip()
+
+    print("Jarvis:", answer)
+
+    speak(answer[:200])

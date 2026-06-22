@@ -1,13 +1,49 @@
-import pyttsx3
+import asyncio
+import edge_tts
+import pygame
+import os
+import time
+
+VOICE = "en-US-AndrewNeural"
+
+
+async def generate_voice(text):
+
+    communicate = edge_tts.Communicate(
+        text=str(text),
+        voice=VOICE
+    )
+
+    await communicate.save("jarvis_voice.mp3")
+
 
 def speak(text):
-    engine = pyttsx3.init()
 
-    voices = engine.getProperty("voices")
-    engine.setProperty("voice", voices[1].id)  # Zira
-    engine.setProperty("rate", 180)
+    try:
 
-    engine.say(str(text))
-    engine.runAndWait()
+        text = str(text)
 
-    engine.stop()
+        asyncio.run(generate_voice(text))
+
+        pygame.mixer.init()
+
+        pygame.mixer.music.load(
+            "jarvis_voice.mp3"
+        )
+
+        pygame.mixer.music.play()
+
+        while pygame.mixer.music.get_busy():
+
+            time.sleep(0.1)
+
+        pygame.mixer.quit()
+
+        try:
+            os.remove("jarvis_voice.mp3")
+        except:
+            pass
+
+    except Exception as e:
+
+        print("Voice Error:", e)
