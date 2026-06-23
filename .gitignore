@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+Screenshots/
+
+*.log
+*.wav
+*.mp3
