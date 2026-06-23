@@ -1,4 +1,5 @@
 import ollama
+import time
 
 SYSTEM_PROMPT = """
 You are Jarvis, a voice assistant.
@@ -7,15 +8,21 @@ Rules:
 - Give short spoken answers.
 - Never use markdown.
 - Never use code blocks.
-- Never use bullet points unless requested.
 - Keep answers under 3 sentences.
 - Speak naturally.
 """
 
+
 def ask_jarvis(prompt):
+
+    start = time.time()
 
     response = ollama.chat(
         model="qwen3:8b",
+        options={
+            "num_predict": 80,
+            "temperature": 0.5
+        },
         messages=[
             {
                 "role": "system",
@@ -28,9 +35,15 @@ def ask_jarvis(prompt):
         ]
     )
 
+    print(
+        f"AI Response Time: {time.time() - start:.2f}s"
+    )
+
     answer = response["message"]["content"]
 
     if "</think>" in answer:
-        answer = answer.split("</think>")[-1]
+        answer = answer.split(
+            "</think>"
+        )[-1]
 
     return answer.strip()

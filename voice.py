@@ -6,6 +6,8 @@ import time
 
 VOICE = "en-US-AndrewNeural"
 
+pygame.mixer.init()
+
 
 async def generate_voice(text):
 
@@ -14,7 +16,9 @@ async def generate_voice(text):
         voice=VOICE
     )
 
-    await communicate.save("jarvis_voice.mp3")
+    await communicate.save(
+        "jarvis_voice.mp3"
+    )
 
 
 def speak(text):
@@ -23,9 +27,9 @@ def speak(text):
 
         text = str(text)
 
-        asyncio.run(generate_voice(text))
-
-        pygame.mixer.init()
+        asyncio.run(
+            generate_voice(text)
+        )
 
         pygame.mixer.music.load(
             "jarvis_voice.mp3"
@@ -35,15 +39,20 @@ def speak(text):
 
         while pygame.mixer.music.get_busy():
 
-            time.sleep(0.1)
+            time.sleep(0.05)
 
-        pygame.mixer.quit()
+        pygame.mixer.music.unload()
 
         try:
-            os.remove("jarvis_voice.mp3")
+            os.remove(
+                "jarvis_voice.mp3"
+            )
         except:
             pass
 
     except Exception as e:
 
-        print("Voice Error:", e)
+        print(
+            "Voice Error:",
+            e
+        )

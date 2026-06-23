@@ -5,6 +5,7 @@ import urllib.parse
 import pyautogui
 import pywhatkit
 from memory import remember, recall, all_memory
+from rapidfuzz import process
 import psutil
 import pygetwindow as gw
 
@@ -15,6 +16,21 @@ def load_apps():
             return json.load(f)
     except Exception:
         return {}
+    
+def find_best_match(text, choices):
+
+    if not choices:
+        return None
+    
+    match = process.extractOne(
+        text,
+        choices
+    )
+
+    if match and match[1] > 70:
+        return match[0]
+    
+    return None
 
 
 # FIX 1: Moved out of load_apps() — was incorrectly nested inside it
@@ -246,6 +262,16 @@ def run_command(query):
     if query.startswith("open "):
         item = query.replace("open ", "").strip()
 
+        all_apps = list(apps_db.keys())
+
+        best_match = find_best_match(
+            item,
+            all_apps
+        )
+
+        if best_match:
+            item = best_match
+
         if item in websites:
             webbrowser.open(websites[item])
             return f"Opening {item}"
@@ -281,6 +307,29 @@ def run_command(query):
     # FIX 4: Typo — "startwith" → "startswith"
     if query.startswith("close "):
         app = query.replace("close ", "").strip()
+        
+        running_apps =[]
+
+        for proc in psutil.process_iter(["name"]):
+
+            try:
+
+                if proc.info["name"]:
+                    running_apps.append(
+                        proc.info["name"]
+                    )
+
+            except:
+                pass
+        
+        best_match = find_best_match(
+            app,
+            running_apps
+        )
+
+        if best_match:
+            app = best_match
+
         if close_app(app):
             return f"Closing {app}"
         return f"Could not find {app}"

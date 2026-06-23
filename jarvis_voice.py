@@ -6,13 +6,13 @@ from startup_assistant import startup_message
 
 import time
 
-print("Jarvis Online")
+print("Nova Online")
 
 speak(startup_message())
 
 wake_words = [
-    "jarvis",
-    "hey jarvis"
+    "nova",
+    "hey nova"
 ]
 
 while True:
@@ -26,22 +26,19 @@ while True:
 
     print("Wake Word Heard:", query)
 
-    if not any(
-        word in query
-        for word in wake_words
-    ):
+    if "nova" not in query:
         continue
 
-    speak("Yes Ujjale")
-
-    time.sleep(1)
-
-    print("Waiting for command...")
-
-    command = listen()
+    command = query.replace("nova", "").strip()
 
     if not command:
-        continue
+       
+        speak("Yes")
+
+        command = listen()
+
+        if not command:
+            continue
 
     print("Command:", command)
 
@@ -58,7 +55,7 @@ while True:
 
     if result:
 
-        print("Jarvis:", result)
+        print("Nova:", result)
 
         speak(result)
 
@@ -73,6 +70,6 @@ while True:
 
     answer = answer.strip()
 
-    print("Jarvis:", answer)
+    print("Nova:", answer)
 
     speak(answer[:200])
