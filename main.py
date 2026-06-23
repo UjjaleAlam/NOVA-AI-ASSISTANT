@@ -1,7 +1,7 @@
 from brain import ask_jarvis
 from voice import speak
 
-print("Jarvis Online")
+print("Novaine")
 print("Type 'exit' to quit")
 
 while True:

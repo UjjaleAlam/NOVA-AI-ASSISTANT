@@ -45,7 +45,7 @@ def startup_message():
     today = datetime.now().strftime("%A, %B %d")
 
     message = (
-        f"{get_greeting()} Ujjale. "
+        f"{get_greeting()} Sir. "
         f"Today is {today}. "
         f"{get_internet()}. "
         f"{get_battery()}. "

@@ -31,14 +31,9 @@ while True:
 
     command = query.replace("nova", "").strip()
 
+
     if not command:
-       
-        speak("Yes")
-
-        command = listen()
-
-        if not command:
-            continue
+        continue
 
     print("Command:", command)
 

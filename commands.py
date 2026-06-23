@@ -5,10 +5,12 @@ import urllib.parse
 import pyautogui
 import pywhatkit
 from memory import remember, recall, all_memory
+from pathlib import Path
 from rapidfuzz import process
 import psutil
 import pygetwindow as gw
 
+found_files = {}
 
 def load_apps():
     try:
@@ -78,6 +80,59 @@ def switch_to_window(app_name):
         pass
     return False
 
+def find_files(keyword):
+
+    keyword = keyword.lower()
+
+    results = []
+
+    extensions = {
+        "pdf": ".pdf",
+        "word": ".docx",
+        "docx": ".docx",
+        "excel": ".xlsx",
+        "xlsx": ".xlsx",
+        "powerpoint": ".pptx",
+        "ppt": ".pptx",
+        "python": ".py",
+        "image": [".jpg", ".jpeg", ".png", ".webp"],
+        "video": [".mp4", ".mkv", ".avi", ".mov"]
+    }
+
+    try:
+
+        for file in Path.home().rglob("*"):
+            
+            try:
+
+                if not file.is_file():
+                    continue
+
+                if keyword in extensions:
+
+                    ext = extensions[keyword]
+
+                    if isinstance(ext, list):
+
+                        if file.suffix.lower() in ext:
+                            results.append(file)
+
+                    else:
+
+                        if file.suffix.lower() == ext:
+                            results.append(file)
+
+                else:
+
+                    if keyword in file.name.lower():
+                        results.append(file)
+
+            except:
+                pass
+    except:
+        pass
+
+    return results
 
 def run_command(query):
 
@@ -256,11 +311,40 @@ def run_command(query):
     }
 
     # ==========================
+    # OPEN FOUND FILE
+    # ==========================
+
+    if query.startswith("open file "):
+
+        number = query.replace(
+            "open file ",
+            ""
+        ).strip()
+
+        if number in found_files:
+
+            os.startfile(
+                found_files[number]
+            )
+
+            return f"Opening file {number}"
+        
+        return "File not found"
+
+    # ==========================
     # OPEN
     # ==========================
 
     if query.startswith("open "):
         item = query.replace("open ", "").strip()
+
+        if item in found_files:
+
+            os.startfile(
+                found_files[item]
+            )
+        
+            return f"Opening {item}"
 
         all_apps = list(apps_db.keys())
 
@@ -344,6 +428,40 @@ def run_command(query):
             return f"Switching to {app}"
         return f"Could not find {app}"
 
+
+    # ==========================
+    # FILE SEARCH
+    # ==========================
+
+    if query.startswith("find"):
+
+        keyword = query.replace(
+            "find",
+            ""
+        ).strip()
+
+        matches = find_files(keyword)
+
+        if not matches:
+
+            return f"Could not find {keyword}"
+        
+        found_files.clear()
+
+        response = []
+
+        for i, file in enumerate(matches[:20], start=1):
+
+            found_files[str(i)] = str(file)
+
+            found_files[file.stem.lower()] = str(file)
+
+            response.append(
+                f"{i}. {file.name}"
+            )
+
+        return "\n" .join(response)
+
     # ==========================
     # SCREENSHOT
     # ==========================
@@ -388,6 +506,42 @@ def run_command(query):
     if query == "end slideshow":
         pyautogui.press("esc")
         return "Ending slideshow"
+    
+    # ==========================
+    # MEDIA CONTROL
+    # ==========================
+
+    if query in [
+        "pause",
+        "pause song"
+    ]:
+        pyautogui.press("playpause")
+        return "Pausing"
+    
+    if query in [
+        "resume",
+        "resume song",
+        "play"
+    ]:
+        pyautogui.press("playpause")
+        return "Resuming"
+    
+    if query in [
+        "next",
+        "next song",
+        "skip",
+        "skip song"
+    ]:
+        pyautogui.press("nexttrack")
+        return "Next song"
+    
+    if query in [
+        "previous",
+        "previous song",
+        "last song"
+    ]:
+        pyautogui.press("prevtrack")
+        return "Previous song"
 
     # ==========================
     # VOLUME

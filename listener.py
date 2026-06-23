@@ -2,18 +2,10 @@ import speech_recognition as sr
 
 recognizer = sr.Recognizer()
 
-recognizer.dynamic_energy_threshold = True
 recognizer.energy_threshold = 300
-recognizer.pause_threshold = 0.8
-recognizer.non_speaking_duration = 0.3
-
-# Calibrate once at startup
-with sr.Microphone() as source:
-    print("Calibrating microphone...")
-    recognizer.adjust_for_ambient_noise(
-        source,
-        duration=2
-    )
+recognizer.dynamic_energy_threshold = True
+recognizer.pause_threshold = 1.2
+recognizer.phrase_threshold = 0.3
 
 
 def listen():
@@ -26,24 +18,21 @@ def listen():
 
             audio = recognizer.listen(
                 source,
-                timeout=10,
-                phrase_time_limit=20
+                timeout=8,
+                phrase_time_limit=None
             )
 
-        text = recognizer.recognize_google(audio)
+        text = recognizer.recognize_google(
+            audio,
+            language="en-US"
+        )
 
         print("Recognized:", text)
 
         return text.lower()
 
-    except sr.WaitTimeoutError:
-        return ""
-
     except Exception as e:
 
-        print(
-            "Listen Error:", 
-            repr(e)
-            )
+        print("Listen Error:", e)
 
         return ""
