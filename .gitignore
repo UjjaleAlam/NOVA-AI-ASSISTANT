@@ -4,6 +4,7 @@ database/file_index.db
 # Runtime data
 watch_list.json
 memory.json
+apps.json
 jarvis_voice.mp3
 
 # Python
