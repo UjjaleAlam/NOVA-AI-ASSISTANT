@@ -1,8 +1,9 @@
 import ollama
 import time
+from commands import run_command
 
 SYSTEM_PROMPT = """
-You are Jarvis, a voice assistant.
+You are Nova, voice assistant.
 
 Rules:
 - Give short spoken answers.
@@ -14,6 +15,15 @@ Rules:
 
 
 def ask_jarvis(prompt):
+
+    # ---------- COMMAND ROUTER ----------
+
+    command_response = run_command(prompt)
+
+    if command_response is not None:
+        return command_response
+
+    # ---------- AI ----------
 
     start = time.time()
 
@@ -42,8 +52,6 @@ def ask_jarvis(prompt):
     answer = response["message"]["content"]
 
     if "</think>" in answer:
-        answer = answer.split(
-            "</think>"
-        )[-1]
+        answer = answer.split("</think>")[-1]
 
     return answer.strip()

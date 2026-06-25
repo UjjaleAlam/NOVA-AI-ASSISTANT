@@ -9,8 +9,12 @@ from pathlib import Path
 from rapidfuzz import process
 import psutil
 import pygetwindow as gw
-
-found_files = {}
+from file_manager import (
+    search_files,
+    format_results,
+    open_file,
+    found_files
+)
 
 def load_apps():
     try:
@@ -79,60 +83,6 @@ def switch_to_window(app_name):
     except:
         pass
     return False
-
-def find_files(keyword):
-
-    keyword = keyword.lower()
-
-    results = []
-
-    extensions = {
-        "pdf": ".pdf",
-        "word": ".docx",
-        "docx": ".docx",
-        "excel": ".xlsx",
-        "xlsx": ".xlsx",
-        "powerpoint": ".pptx",
-        "ppt": ".pptx",
-        "python": ".py",
-        "image": [".jpg", ".jpeg", ".png", ".webp"],
-        "video": [".mp4", ".mkv", ".avi", ".mov"]
-    }
-
-    try:
-
-        for file in Path.home().rglob("*"):
-            
-            try:
-
-                if not file.is_file():
-                    continue
-
-                if keyword in extensions:
-
-                    ext = extensions[keyword]
-
-                    if isinstance(ext, list):
-
-                        if file.suffix.lower() in ext:
-                            results.append(file)
-
-                    else:
-
-                        if file.suffix.lower() == ext:
-                            results.append(file)
-
-                else:
-
-                    if keyword in file.name.lower():
-                        results.append(file)
-
-            except:
-                pass
-    except:
-        pass
-
-    return results
 
 def run_command(query):
 
@@ -321,16 +271,11 @@ def run_command(query):
             ""
         ).strip()
 
-        if number in found_files:
-
-            os.startfile(
-                found_files[number]
-            )
-
+        if open_file(number):
             return f"Opening file {number}"
         
         return "File not found"
-
+    
     # ==========================
     # OPEN
     # ==========================
@@ -338,13 +283,8 @@ def run_command(query):
     if query.startswith("open "):
         item = query.replace("open ", "").strip()
 
-        if item in found_files:
-
-            os.startfile(
-                found_files[item]
-            )
-        
-            return f"Opening {item}"
+        if open_file(item):
+            return f"Opening {item}" 
 
         all_apps = list(apps_db.keys())
 
@@ -432,35 +372,46 @@ def run_command(query):
     # ==========================
     # FILE SEARCH
     # ==========================
+    COMMAND_WORDS = [
+        "find",
+        "pull",
+        "show",
+        "display",
+        "list"
+    ]
 
-    if query.startswith("find"):
+    IGNORE_WORDS = [
+        "file",
+        "files",
+        "document",
+        "documents",
+        "all",
+        "my"
+    ]
 
-        keyword = query.replace(
-            "find",
-            ""
-        ).strip()
+    words = query.split()
 
-        matches = find_files(keyword)
+    if words and words[0] in COMMAND_WORDS:
 
-        if not matches:
+        keyword = None
 
-            return f"Could not find {keyword}"
-        
-        found_files.clear()
+        for word in words[1:]:
 
-        response = []
+            if word not in IGNORE_WORDS:
 
-        for i, file in enumerate(matches[:20], start=1):
+                keyword = word
 
-            found_files[str(i)] = str(file)
+                break
 
-            found_files[file.stem.lower()] = str(file)
+        if keyword:
 
-            response.append(
-                f"{i}. {file.name}"
-            )
+            results = search_files(keyword)
 
-        return "\n" .join(response)
+            if not results:
+
+                return f"Could not find any {keyword}."
+            
+            return format_results(results)
 
     # ==========================
     # SCREENSHOT

@@ -1,7 +1,20 @@
-venv/
+# Database
+database/file_index.db
+
+# Runtime data
+watch_list.json
+memory.json
+jarvis_voice.mp3
+
+# Python
 __pycache__/
+*.pyc
+
+# Virtual Environment
+venv/
+
+# Screenshots
 Screenshots/
 
+# Logs
 *.log
-*.wav
-*.mp3
