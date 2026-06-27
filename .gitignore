@@ -86,3 +86,11 @@ downloads/
 .env.*
 *.pem
 *.key
+
+# ==========================
+# Database
+# ==========================
+
+database/file_index.db
+
+database/*.db
