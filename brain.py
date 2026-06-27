@@ -16,13 +16,6 @@ Rules:
 
 def ask_jarvis(prompt):
 
-    # ---------- COMMAND ROUTER ----------
-
-    command_response = run_command(prompt)
-
-    if command_response is not None:
-        return command_response
-
     # ---------- AI ----------
 
     start = time.time()

@@ -1,58 +1,54 @@
 import asyncio
-import edge_tts
-import pygame
 import os
 import time
+
+import edge_tts
+import pygame
+
 
 VOICE = "en-US-AndrewNeural"
 
 pygame.mixer.init()
 
 
-async def generate_voice(text):
+async def generate_voice(text, filename):
 
     communicate = edge_tts.Communicate(
         text=str(text),
         voice=VOICE
     )
 
-    await communicate.save(
-        "jarvis_voice.mp3"
-    )
+    await communicate.save(filename)
 
 
 def speak(text):
 
+    filename = "jarvis_voice.mp3"
+
     try:
 
-        text = str(text)
-
         asyncio.run(
-            generate_voice(text)
+            generate_voice(
+                text,
+                filename
+            )
         )
 
-        pygame.mixer.music.load(
-            "jarvis_voice.mp3"
-        )
+        pygame.mixer.music.load(filename)
 
         pygame.mixer.music.play()
 
         while pygame.mixer.music.get_busy():
 
-            time.sleep(0.05)
+            time.sleep(0.02)
+
+        pygame.mixer.music.stop()
 
         pygame.mixer.music.unload()
 
+    finally:
+
         try:
-            os.remove(
-                "jarvis_voice.mp3"
-            )
-        except:
+            os.remove(filename)
+        except Exception:
             pass
-
-    except Exception as e:
-
-        print(
-            "Voice Error:",
-            e
-        )

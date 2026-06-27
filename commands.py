@@ -1,12 +1,15 @@
 import os
 import json
+import re
 import webbrowser
 import urllib.parse
 import pyautogui
 import pywhatkit
 from memory import remember, recall, all_memory
 from pathlib import Path
+from ui.overlay_manager import overlay_manager
 from rapidfuzz import process
+from core.session import session
 import psutil
 import pygetwindow as gw
 from file_manager import (
@@ -16,12 +19,35 @@ from file_manager import (
     found_files
 )
 
-def load_apps():
-    try:
-        with open("apps.json", "r", encoding="utf-8") as f:
-            return json.load(f)
-    except Exception:
-        return {}
+from app_indexer import (
+    load_apps,
+    build_app_index
+)
+
+APPS_DB = load_apps()
+
+NUMBER_WORDS = {
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+    "ten": "10",
+    "eleven": "11",
+    "twelve": "12",
+    "thirteen": "13",
+    "fourteen": "14",
+    "fifteen": "15",
+    "sixteen": "16",
+    "seventeen": "17",
+    "eighteen": "18",
+    "nineteen": "19",
+    "twenty": "20"
+}
     
 def find_best_match(text, choices):
 
@@ -85,6 +111,8 @@ def switch_to_window(app_name):
     return False
 
 def run_command(query):
+
+    global APPS_DB
 
     query = query.lower().strip()
 
@@ -161,9 +189,16 @@ def run_command(query):
     }
 
     for old, new in replacements.items():
-        query = query.replace(old, new)
+        
+        pattern = r"\b" + re.escape(old) + r"\b"
 
-    apps_db = load_apps()
+        query = re.sub(
+            pattern,
+            new,
+            query
+        )
+
+    apps_db = APPS_DB
 
     # ==========================
     # PLAY VIDEO / SONG
@@ -200,12 +235,15 @@ def run_command(query):
     # ==========================
     # REFRESH APPS
     # ==========================
-
     if query == "refresh apps":
-        from app_indexer import build_app_index
-        count = build_app_index()
-        return f"Indexed {count} applications"
 
+
+        count = build_app_index()
+
+        APPS_DB = load_apps()
+
+        return f"Indexed {count} applications"
+        
     # ==========================
     # LIST APPS
     # ==========================
@@ -266,15 +304,32 @@ def run_command(query):
 
     if query.startswith("open file "):
 
-        number = query.replace(
-            "open file ",
-            ""
-        ).strip()
+        value = query.replace(
+             "open file ",
+             ""
+        ).strip().lower()
 
-        if open_file(number):
-            return f"Opening file {number}"
-        
-        return "File not found"
+        value = NUMBER_WORDS.get(value, value)
+
+        if session.is_active():
+
+            try:
+                index = int(value) - 1
+
+                item = session.get(index)
+
+                if item:
+
+                    if open_file(item["stem"]):
+                        return "Opening."
+
+            except ValueError:
+              pass
+
+        if open_file(value):
+            return "Opening."
+
+        return "I couldn't find that file."
     
     # ==========================
     # OPEN
@@ -282,9 +337,6 @@ def run_command(query):
 
     if query.startswith("open "):
         item = query.replace("open ", "").strip()
-
-        if open_file(item):
-            return f"Opening {item}" 
 
         all_apps = list(apps_db.keys())
 

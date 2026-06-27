@@ -1,25 +1,26 @@
-from threading import Thread
+import sys
+from PySide6.QtWidgets import QApplication
 
-from brain import ask_jarvis
-from voice import speak
-from watchdog_manager import start_watchdog
+from core.application import NovaApplication
 
-print("Novaine")
-print("Type 'exit' to quit")
 
-Thread(
-    target=start_watchdog,
-    daemon=True
-).start()
+def main():
 
-while True:
+    app = QApplication.instance()
 
-    user_input = input("\nYou: ")
+    if app is None:
+        app = QApplication(sys.argv)
 
-    if user_input.lower() == "exit":
-        speak("Goodbye")
-        break
+    nova = NovaApplication()
 
-    answer = ask_jarvis(user_input)
+    nova.run()
 
-    speak(answer)
+    exit_code = app.exec()
+
+    nova.shutdown()
+
+    sys.exit(exit_code)
+
+
+if __name__ == "__main__":
+    main()

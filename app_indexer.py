@@ -7,6 +7,21 @@ APP_LOCATIONS = [
     os.path.expandvars(r"%USERPROFILE%\Desktop"),
 ]
 
+APP_DATABASE = "apps.json"
+
+def load_apps():
+
+    if not os.path.exists(APP_DATABASE):
+
+        build_app_index()
+
+    with open(
+        APP_DATABASE,
+        "r",
+        encoding="utf-8"
+    ) as f:
+        
+        return json.load(f)
 
 def build_app_index():
 

@@ -4,7 +4,7 @@ recognizer = sr.Recognizer()
 
 recognizer.energy_threshold = 300
 recognizer.dynamic_energy_threshold = True
-recognizer.pause_threshold = 1.2
+recognizer.pause_threshold = 0.6
 recognizer.phrase_threshold = 0.3
 
 
