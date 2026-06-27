@@ -1,5 +1,8 @@
 import os
-from database import get_connection
+from database import (
+    get_connection,
+    record_open
+)
 from core.session import session
 from ui.overlay_manager import overlay_manager
 from ui.models.selection_item import SelectionItem
@@ -63,7 +66,7 @@ MAX_DISPLAY_RESULTS = 500
 # ==========================================
 # SEARCH FILES
 # ==========================================
-def search_files(keyword):
+def search_files(keyword, limit=500):
 
     keyword = keyword.lower().strip()
 
@@ -86,25 +89,49 @@ def search_files(keyword):
             FROM files
             WHERE extension IN ({placeholders})
             ORDER BY name
+            LIMIT ?
             """,
-            extensions
+            (*extensions, limit)
         )
 
     else:
 
-        cursor.execute(
-            """
-            SELECT
-                name,
-                path,
-                extension
-            FROM files
-            WHERE LOWER(name) LIKE ?
-            ORDER BY name
-            """,
-            (f"%{keyword}%",)
-        )
+        try:
 
+           cursor.execute(
+               f"""
+               SELECT
+                   files.name,
+                   files.path,
+                   files.extension
+               FROM files_fts
+               JOIN files
+               ON files.id = files_fts.rowid
+               WHERE files_fts MATCH ?
+               LIMIT {int(limit)}
+               """,
+               (f"{keyword}*",)
+            )
+        
+        except Exception:
+
+            cursor.execute(
+                """
+                SELECT 
+                    name,
+                    path,
+                    extension
+                From files
+
+                WHERE LOWER(name) LIKE ?
+
+                ORDER BY name
+
+                LIMIT ?
+
+                """,
+                (f"%{keyword}%", limit)
+            )
     rows = cursor.fetchall()
 
     conn.close()
@@ -123,6 +150,15 @@ def search_files(keyword):
         )
 
     return results
+# =========================================
+# SEARCH RECENT FILES
+# =========================================
+
+def search_recent_files(limit=10):
+
+    from database import get_recent_files
+
+    return get_recent_files(limit)
 
 # ==========================================
 # SAVE LAST SEARCH
@@ -156,6 +192,8 @@ def open_file(name):
     QApplication.processEvents()
 
     os.startfile(path)
+
+    record_open(path)
 
     return True
 

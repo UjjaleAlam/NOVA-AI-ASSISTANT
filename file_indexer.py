@@ -1,6 +1,9 @@
 import os
 from pathlib import Path
-from database import get_connection
+from database import (
+    get_connection,
+    rebuild_fts
+)
 
 
 def get_drives():
@@ -20,6 +23,8 @@ def build_file_index():
     cursor = conn.cursor()
 
     cursor.execute("DELETE FROM files")
+
+    cursor.execute("DELETE FROM recent_files")
 
     conn.commit()
 
@@ -84,18 +89,26 @@ def build_file_index():
 
                     total += 1
 
-                    if total % 1000 == 0:
+                    if total % 5000 == 0:
 
                         conn.commit()
 
                         print(f"Indexed {total:,} files...")
 
+                except PermissionError:
+                    pass
+                except FileNotFoundError:
+                    pass
                 except Exception:
                     pass
 
     conn.commit()
 
     conn.close()
+
+    print("\nRebuilding search index...")
+
+    rebuild_fts()
 
     print(f"\nFinished indexing {total:,} files.")
 

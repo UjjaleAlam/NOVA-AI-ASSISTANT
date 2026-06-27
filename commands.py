@@ -457,7 +457,10 @@ def run_command(query):
 
         if keyword:
 
-            results = search_files(keyword)
+            results = search_files(
+                keyword,
+                limit=500
+            )
 
             if not results:
 
