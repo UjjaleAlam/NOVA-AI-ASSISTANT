@@ -34,7 +34,12 @@ IGNORE_EXTENSIONS = {
     ".db-wal",
     ".db-shm",
     ".tmp",
-    ".temp"
+    ".temp",
+    ".part",
+    ".crdownload",
+    ".download",
+    ".bak",
+    ".old"
 }
 
 IGNORE_PREFIXES = (
@@ -100,7 +105,7 @@ class NovaFileHandler(FileSystemEventHandler):
             event.src_path
         )
 
-        print(f"[+] {event.src_path}")
+        print(f"[WATCHDOG] Created : {event.src_path}")
 
 
     def on_modified(self, event):
@@ -116,7 +121,7 @@ class NovaFileHandler(FileSystemEventHandler):
             event.src_path
         )
 
-        print(f"[*] {event.src_path}")
+        print(f"[WATCHDOG] Modified : {event.src_path}")
 
 
     def on_deleted(self, event):
@@ -132,7 +137,7 @@ class NovaFileHandler(FileSystemEventHandler):
             event.src_path
         )
 
-        print(f"[-] {event.src_path}")
+        print(f"[WATCHDOG] Deleted : {event.src_path}")
 
 
     def on_moved(self, event):
@@ -145,6 +150,9 @@ class NovaFileHandler(FileSystemEventHandler):
 
         if should_ignore(event.dest_path):
             return
+        
+        if event.src_path == event.dest_path:
+            return
 
         add_event(
             "moved",
@@ -152,8 +160,9 @@ class NovaFileHandler(FileSystemEventHandler):
             event.dest_path
         ) 
 
-        print(f"[>] {event.src_path}")
-        print(f"    -> {event.dest_path}")
+        print(f"[WATCHDOG] Moved")
+        print(f"    From: {event.src_path}")
+        print(f"    To  : {event.dest_path}")
 
 
 # ==========================================================
