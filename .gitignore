@@ -1,21 +1,88 @@
-# Database
-database/file_index.db
+# ==========================
+# Python
+# ==========================
 
-# Runtime data
-watch_list.json
-memory.json
-apps.json
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ==========================
+# Virtual Environment
+# ==========================
+
+.venv/
+venv/
+env/
+ENV/
+
+# ==========================
+# IDE
+# ==========================
+
+.vscode/
+.idea/
+
+# ==========================
+# Build
+# ==========================
+
+build/
+dist/
+*.spec
+
+# ==========================
+# Python Cache
+# ==========================
+
+.pytest_cache/
+.mypy_cache/
+
+# ==========================
+# Logs
+# ==========================
+
+logs/
+*.log
+
+# ==========================
+# Runtime Files
+# ==========================
+
 jarvis_voice.mp3
 
-# Python
-__pycache__/
-*.pyc
+# ==========================
+# OS Files
+# ==========================
 
-# Virtual Environment
-venv/
+Thumbs.db
+Desktop.ini
+.DS_Store
 
-# Screenshots
-Screenshots/
+# ==========================
+# SQLite Temporary Files
+# ==========================
 
-# Logs
-*.log
+*.db-wal
+*.db-shm
+
+# ==========================
+# Future Runtime Data
+# ==========================
+
+cache/
+temp/
+userdata/
+memory/
+recordings/
+screenshots/
+exports/
+downloads/
+
+# ==========================
+# Secrets
+# ==========================
+
+.env
+.env.*
+*.pem
+*.key

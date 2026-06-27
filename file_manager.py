@@ -1,5 +1,10 @@
 import os
 from database import get_connection
+from core.session import session
+from ui.overlay_manager import overlay_manager
+from ui.models.selection_item import SelectionItem
+from core.file_icons import get_file_icon
+from PySide6.QtWidgets import QApplication
 
 # ==========================================
 # FILE TYPES
@@ -52,6 +57,8 @@ FILE_TYPES = {
 # ==========================================
 
 found_files = {}
+
+MAX_DISPLAY_RESULTS = 500
 
 # ==========================================
 # SEARCH FILES
@@ -144,6 +151,10 @@ def open_file(name):
     if not path:
         return False
 
+    overlay_manager.hide()
+
+    QApplication.processEvents()
+
     os.startfile(path)
 
     return True
@@ -152,17 +163,42 @@ def open_file(name):
 # FORMAT RESULTS
 # ==========================================
 
+def format_results(results):
 
-def format_results(results, limit=20):
+    if not results:
+        return "I couldn't find any matching files."
 
-    cache_results(results[:limit])
+    cache_results(results)
 
-    output = []
+    display = []
 
-    for i, file in enumerate(results[:limit], start=1):
+    for file in results:
 
-        output.append(
-            f"{i}. {file['name']}"
+        display.append(
+            {
+                "name": file["name"],
+                "stem": file["stem"],
+                "path": file["path"],
+                "extension": file["extension"],
+            }
         )
 
-    return "\n".join(output)
+    session.start(
+        session_type="file_search",
+        results=display,
+        title=f"{len(display)} Results"
+    )
+
+    from ui.overlay_manager import overlay_manager
+
+    overlay_manager.show_files(
+
+        display,
+
+        callback=None,
+
+        title=f"{len(display)} Results"
+
+    )
+
+    return f"I found {len(display)} files."
