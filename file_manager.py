@@ -9,6 +9,88 @@ from ui.models.selection_item import SelectionItem
 from core.file_icons import get_file_icon
 from PySide6.QtWidgets import QApplication
 
+
+# ==========================================
+# FILE ALIAS
+# ==========================================
+
+FILE_ALIASES = {
+
+    # Word
+    "word": "word",
+    "words": "word",
+    "document": "word",
+    "documents": "word",
+    "doc": "word",
+    "docs": "word",
+    "docx": "word",
+
+    # PDF
+    "pdf": "pdf",
+    "pdfs": "pdf",
+
+    # Excel
+    "excel": "excel",
+    "sheet": "excel",
+    "sheets": "excel",
+    "spreadsheet": "excel",
+    "spreadsheets": "excel",
+    "xlsx": "excel",
+    "xls": "excel",
+    "csv": "excel",
+
+    # PowerPoint
+    "powerpoint": "powerpoint",
+    "ppt": "powerpoint",
+    "pptx": "powerpoint",
+    "presentation": "powerpoint",
+    "presentations": "powerpoint",
+    "slides": "powerpoint",
+
+     # Images
+    "image": "images",
+    "images": "images",
+    "photo": "images",
+    "photos": "images",
+    "picture": "images",
+    "pictures": "images",
+
+    # Video
+    "video": "videos",
+    "videos": "videos",
+    "movie": "videos",
+    "movies": "videos",
+
+    # Music
+    "music": "music",
+    "song": "music",
+    "songs": "music",
+    "audio": "music",
+
+    # Python
+    "python": "python",
+    "py": "python",
+
+    # HTML
+    "html": "html",
+
+    # CSS
+    "css": "css",
+
+    # JS
+    "javascript": "javascript",
+    "js": "javascript",
+
+    # Zip
+    "zip": "zip",
+    "archive": "zip",
+    "archives": "zip",
+
+    # Text
+    "text": "text",
+    "txt": "text",
+
+}
 # ==========================================
 # FILE TYPES
 # ==========================================
@@ -69,6 +151,8 @@ MAX_DISPLAY_RESULTS = 500
 def search_files(keyword, limit=500):
 
     keyword = keyword.lower().strip()
+
+    keyword = FILE_ALIASES.get(keyword, keyword)
 
     conn = get_connection()
 
@@ -149,7 +233,13 @@ def search_files(keyword, limit=500):
             }
         )
 
+    results = rank_results(
+        results,
+        keyword
+    )
+
     return results
+
 # =========================================
 # SEARCH RECENT FILES
 # =========================================
@@ -159,6 +249,128 @@ def search_recent_files(limit=10):
     from database import get_recent_files
 
     return get_recent_files(limit)
+
+# ==========================================
+# SMART SEARCH RANKING
+# ==========================================
+
+USER_FOLDER_SCORES = {
+    "\\documents\\": 1000,
+    "\\desktop\\": 950,
+    "\\downloads\\": 900,
+    "\\pictures\\": 900,
+    "\\videos\\": 700,
+    "\\music\\": 600,
+    "\\projects\\": 500,
+}
+
+LOW_PRIORITY_SCORES = {
+    "\\windows\\": -3000,
+    "\\program files\\": -2500,
+    "\\program files (x86)\\": -2500,
+    "\\appdata\\": -2200,
+    "\\onedrive\\": -1500,
+    "\\microsoft\\": -300,
+}
+
+PREFERRED_EXTENSIONS = {
+    ".pdf": 300,
+    ".doc": 290,
+    ".docx": 280,
+    ".xls": 270,
+    ".xlsx": 270,
+    ".ppt": 240,
+    ".pptx": 250,
+    ".txt": 220,
+    ".csv": 230,
+    ".py": 210,
+    ".ipynb": 200,
+}
+
+def rank_results(results, keyword):
+
+    keyword = keyword.lower()
+
+    def score(file):
+
+        score = 0
+
+        name = file["name"].lower()
+
+        stem = file["stem"].lower()
+
+        path = file["path"].lower()
+
+        extension = file["extension"].lower()
+
+        # --------------------------------------
+        # NAME MATCHING
+        # --------------------------------------
+
+        if stem == keyword:
+            score += 3000
+
+        elif name == keyword:
+            score += 2800
+
+        elif stem.startswith(keyword):
+            score += 2000
+
+        elif keyword in stem:
+            score += 1200
+
+        # ---------------------------------------
+        # Exact word match
+        # ---------------------------------------
+
+        words = (
+            stem.replace("_", " ")
+                .replace("-", " ")
+                .split()
+        )
+
+        if keyword in words:
+            score += 700
+
+        # ---------------------------------------
+        # Preferred extensions
+        # ---------------------------------------
+
+        score += PREFERRED_EXTENSIONS.get(extension, 0)
+
+        # ---------------------------------------
+        # User Folder Bonus
+        # ---------------------------------------
+
+        for folder, bonus in USER_FOLDER_SCORES.items():
+            if folder in path:
+                score += bonus
+                break
+        
+        # ----------------------------------------
+        # Lower Priority System Files
+        # ----------------------------------------
+
+        for folder, penalty in LOW_PRIORITY_SCORES.items():
+            if folder in path:
+                score -= penalty
+                break
+
+        # ----------------------------------------
+        # Slight preference for shallower paths
+        # ----------------------------------------
+
+        depth = path.count("\\")
+
+        score -= depth * 3
+
+        return score
+    
+    return sorted(
+        results,
+        key=score,
+        reverse=True
+    )
 
 # ==========================================
 # SAVE LAST SEARCH
