@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from database import (
     get_connection,
-    rebuild_fts
+    rebuild_fts,
 )
 
 
@@ -24,11 +24,15 @@ def build_file_index():
 
     cursor.execute("DELETE FROM files")
 
+    cursor.execute("DELETE FROM folders")
+
     cursor.execute("DELETE FROM recent_files")
 
     conn.commit()
 
     total = 0
+
+    folder_total = 0
 
     drives = get_drives()
 
@@ -56,6 +60,37 @@ def build_file_index():
                     "programdata"
                 }
             ]
+
+            for folder in dirs:
+
+                try:
+
+                    folder_path = os.path.join(root, folder)
+
+                    stat = os.stat(folder_path)
+
+                    cursor.execute(
+                        """
+                        INSERT OR IGNORE INTO folders
+                        (
+                           name,
+                           path,
+                           modified
+                        )
+                        VALUES
+                        (?, ?, ?)
+                        """,
+                        (
+                            folder,
+                            folder_path,
+                            stat.st_mtime
+                        )
+                    )
+
+                    folder_total += 1
+
+                except Exception:
+                    pass
 
             for file in files:
 
@@ -110,7 +145,13 @@ def build_file_index():
 
     rebuild_fts()
 
+    cursor = get_connection().cursor()
+    cursor.execute("INSERT INTO folders_fts(folders_fts) VALUES('rebuild')")
+    cursor.connection.commit()
+    cursor.connection.close()
+
     print(f"\nFinished indexing {total:,} files.")
+    print(f"Indexed {folder_total:,} folders.")
 
 if __name__ == "__main__":
 
