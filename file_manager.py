@@ -90,7 +90,68 @@ FILE_ALIASES = {
     "text": "text",
     "txt": "text",
 
+    #Folder
+    "folder": "folder",
+    "folders": "folder",
+    "directory": "folder",
+    "directories": "folder",
+
 }
+
+# ==========================================
+# CLEAN SEARCH QUERY
+# ==========================================
+
+def normalize_search_query(query):
+
+    query = query.lower().strip()
+
+    remove_words = {
+        "find",
+        "search",
+        "show",
+        "open",
+        "pull",
+        "locate",
+        "get",
+        "give",
+        "display",
+        "list",
+
+
+        "me",
+        "my",
+        "the",
+        "all",
+        "a",
+        "an",
+
+
+        "file",
+        "files",
+        "folder",
+        "folders",
+    }
+
+    words = []
+
+    for word in query.split():
+
+        if word in remove_words:
+            continue
+
+        words.append(word)
+
+    normalized = []
+
+    for word in words:
+
+        normalized.append(
+            FILE_ALIASES.get(word, word)
+        )
+
+    return normalized
+
 # ==========================================
 # FILE TYPES
 # ==========================================
@@ -143,6 +204,8 @@ FILE_TYPES = {
 
 found_files = {}
 
+found_folders = {}
+
 MAX_DISPLAY_RESULTS = 500
 
 # ==========================================
@@ -150,15 +213,26 @@ MAX_DISPLAY_RESULTS = 500
 # ==========================================
 def search_files(keyword, limit=500):
 
-    keyword = keyword.lower().strip()
+    keywords = normalize_search_query(keyword)
 
-    keyword = FILE_ALIASES.get(keyword, keyword)
-
+    if not keywords:
+        return []
+    
     conn = get_connection()
 
     cursor = conn.cursor()
 
-    extensions = FILE_TYPES.get(keyword)
+    extensions = None
+    search_words = []
+
+    for word in keywords:
+
+        if word in FILE_TYPES:
+            extensions = FILE_TYPES[word]
+
+        else:
+
+            search_words.append(word)
 
     if extensions:
 
@@ -181,6 +255,11 @@ def search_files(keyword, limit=500):
     else:
 
         try:
+           
+           search_query = " ".join(
+               f"{word}*"
+               for word in search_words
+           )
 
            cursor.execute(
                f"""
@@ -194,7 +273,7 @@ def search_files(keyword, limit=500):
                WHERE files_fts MATCH ?
                LIMIT {int(limit)}
                """,
-               (f"{keyword}*",)
+               (search_query,)
             )
         
         except Exception:
@@ -214,7 +293,7 @@ def search_files(keyword, limit=500):
                 LIMIT ?
 
                 """,
-                (f"%{keyword}%", limit)
+                (f"%{' '.join(search_words)}%", limit)
             )
     rows = cursor.fetchall()
 
@@ -235,10 +314,80 @@ def search_files(keyword, limit=500):
 
     results = rank_results(
         results,
-        keyword
+        " ".join(search_words)
     )
 
     return results
+
+def search_folders(keyword, limit=500):
+
+    keyword = keyword.lower().strip()
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    try:
+
+        cursor.execute(
+            """
+            SELECT
+             
+                folders.name,
+                folders.path
+
+            FROM folders_fts
+
+            JOIN folders
+
+            ON folders.id = folders_fts.rowid
+
+            WHERE folders_fts MATCH ?
+
+            LIMIT ?
+            """,
+            (f"{keyword}*", limit)
+        )
+
+    except Exception:
+
+        cursor.execute(
+            """
+            SELECT
+
+               name,
+
+               path
+            
+            FROM folders
+
+            WHERE LOWER(name) LIKE ?
+
+            ORDER BY name
+
+            LIMIT ?
+            """,
+            (f"%{keyword}%", limit)
+        )
+
+    rows = cursor.fetchall()
+
+    conn.close()
+
+    results = []
+
+    for name, path in rows:
+
+        results.append(
+            {
+                "name": name,
+                "stem": name,
+                "path": path,
+                "extension": ""
+            }
+        )
+
+    return rank_results(results, keyword)
 
 # =========================================
 # SEARCH RECENT FILES
@@ -353,7 +502,7 @@ def rank_results(results, keyword):
 
         for folder, penalty in LOW_PRIORITY_SCORES.items():
             if folder in path:
-                score -= penalty
+                score += penalty
                 break
 
         # ----------------------------------------
@@ -387,6 +536,15 @@ def cache_results(results):
 
         found_files[file["stem"].lower()] = file["path"]
 
+def cache_folder_results(results):
+
+    found_folders.clear()
+
+    for i, folder in enumerate(results, start=1):
+
+        found_folders[str(i)] = folder["path"]
+
+        found_folders[folder["stem"].lower()] = folder["path"]
 # ==========================================
 # OPEN FILE
 # ==========================================
@@ -406,6 +564,21 @@ def open_file(name):
     os.startfile(path)
 
     record_open(path)
+
+    return True
+
+def open_folder(name):
+
+    path = found_folders.get(name.lower())
+
+    if not path:
+        return False
+    
+    overlay_manager.hide()
+
+    QApplication.processEvents()
+
+    os.startfile(path)
 
     return True
 
@@ -452,3 +625,37 @@ def format_results(results):
     )
 
     return f"I found {len(display)} files."
+
+def format_folder_results(results):
+
+    if not results:
+        return "I couldn't find any matching folders."
+    
+    cache_folder_results(results)
+
+    display = []
+
+    for folder in results:
+
+        display.append(
+            {
+                "name": folder["name"],
+                "stem": folder["stem"],
+                "path": folder["path"],
+                "extension": ""
+            }
+        )
+
+    session.start(
+        session_type="folder_search",
+        results=display,
+        title=f"{len(display)} Folders"
+    )
+
+    overlay_manager.show_files(
+        display,
+        callback=None,
+        title=f"{len(display)} Folders"
+    )
+
+    return f"I found {len(display)} folders."

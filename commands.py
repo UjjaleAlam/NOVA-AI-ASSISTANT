@@ -10,13 +10,18 @@ from pathlib import Path
 from ui.overlay_manager import overlay_manager
 from rapidfuzz import process
 from core.session import session
+from core.folder_operations import create_folder
 import psutil
 import pygetwindow as gw
 from file_manager import (
     search_files,
     format_results,
     open_file,
-    found_files
+    found_files,
+
+    search_folders,
+    format_folder_results,
+    open_folder
 )
 
 from app_indexer import (
@@ -299,6 +304,40 @@ def run_command(query):
     }
 
     # ==========================
+    # OPEN FOUND FOLDER
+    # ==========================
+
+    if query.startswith("open folder "):
+
+        value = query.replace(
+            "open folder ",
+            ""
+        ).strip().lower()
+
+        value = NUMBER_WORDS.get(value, value)
+
+        if session.is_active():
+
+            try:
+
+                index = int(value) - 1
+
+                item = session.get(index)
+
+                if item:
+
+                    if open_folder(item["name"]):
+                        return "Opening folder."
+                    
+            except ValueError:
+                pass
+
+        if open_folder(value):
+            return "Opening folder."
+        
+        return "I couldn't find that folder."
+
+    # ==========================
     # OPEN FOUND FILE
     # ==========================
 
@@ -330,6 +369,29 @@ def run_command(query):
             return "Opening."
 
         return "I couldn't find that file."
+    
+    # ==========================
+    # CREATE FOLDER
+    # ==========================
+
+    if (
+        query.startswith("create folder ")
+        or query.startswith("make folder ")
+        or query.startswith("new folder ")
+    ):
+        
+        if query.startswith("create folder "):
+            name = query.replace("create folder ", "")
+
+        elif query.startswith("make folder "):
+            name = query.replace("make folder ", "")
+
+        else:
+            name = query.replace("new folder ", "")
+
+        success, message = create_folder(name.strip())
+
+        return message
     
     # ==========================
     # OPEN
@@ -424,49 +486,99 @@ def run_command(query):
     # ==========================
     # FILE SEARCH
     # ==========================
-    COMMAND_WORDS = [
+
+    COMMAND_WORDS = {
         "find",
         "pull",
         "show",
         "display",
         "list"
-    ]
+    }
 
-    IGNORE_WORDS = [
+    IGNORE_WORDS = {
         "file",
         "files",
         "document",
         "documents",
         "all",
         "my"
-    ]
+    }
+
+    FOLDER_WORDS = {
+        "folder",
+        "folders",
+        "directory",
+        "directories"
+    }
 
     words = query.split()
 
     if words and words[0] in COMMAND_WORDS:
 
-        keyword = None
+        # ----------------------------------
+        # Detect folder search
+        # ----------------------------------
+
+        is_folder_search = any(
+            word in FOLDER_WORDS
+            for word in words
+        )
+
+        # ----------------------------------
+        # Build search keyword
+        # ----------------------------------
+
+        search_words = []
 
         for word in words[1:]:
 
-            if word not in IGNORE_WORDS:
+            if word in IGNORE_WORDS:
+                continue
 
-                keyword = word
+            if word in FOLDER_WORDS:
+                continue
 
-                break
+            search_words.append(word)
 
-        if keyword:
+        keyword = " ".join(search_words).strip()
 
-            results = search_files(
+        # ----------------------------------
+        # Folder Search
+        # ----------------------------------
+
+        if is_folder_search:
+
+            results = search_folders(
                 keyword,
                 limit=500
             )
 
             if not results:
 
+                if keyword:
+                    return f"I couldn't find any folders named {keyword}."
+
+                return "I couldn't find any folders."
+
+            return format_folder_results(results)
+
+        # ----------------------------------
+        # File Search
+        # ----------------------------------
+
+        results = search_files(
+            keyword,
+            limit=500
+        )
+
+        if not results:         
+
+            if keyword:
                 return f"Could not find any {keyword}."
-            
-            return format_results(results)
+
+            return "What would you like me to search for?"
+
+        return format_results(results)
 
     # ==========================
     # SCREENSHOT

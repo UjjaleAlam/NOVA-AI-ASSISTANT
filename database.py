@@ -52,6 +52,23 @@ def initialize_database():
     """)
 
     # ============================================
+    # Folders Table
+    # ============================================
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS folders(
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            name TEXT NOT NULL,
+
+            path TEXT UNIQUE NOT NULL,
+
+            modified REAL
+        )
+    """)
+
+    # ============================================
     # Full Text Search
     # ============================================
      
@@ -67,6 +84,16 @@ def initialize_database():
                    
             tokenize='unicode61'
         )  
+    """)
+
+    cursor.execute("""
+        CREATE VIRTUAL TABLE IF NOT EXISTS folders_fts
+        USING fts5(
+           name,
+           content='folders',
+           content_rowid='id',
+           tokenize='unicode61'
+        )
     """)
     
     # ============================================
@@ -107,6 +134,36 @@ def initialize_database():
         END;
     """)
 
+    cursor.execute("""
+        CREATE TRIGGER IF NOT EXISTS folders_ai
+        AFTER INSERT ON folders
+        BEGIN
+            INSERT INTO folders_fts(rowid,name)
+            VALUES(new.id,new.name);
+        END; 
+    """)
+
+    cursor.execute("""
+        CREATE TRIGGER IF NOT EXISTS folders_ad
+        AFTER DELETE ON folders
+        BEGIN
+            INSERT INTO folders_fts(folders_fts,rowid,name)
+            VALUES('delete',old.id,old.name);
+        END;
+    """)
+
+    cursor.execute("""
+        CREATE TRIGGER IF NOT EXISTS folders_au
+        AFTER UPDATE ON folders
+        BEGIN
+            INSERT INTO folders_fts(folders_fts, rowid, name)
+            VALUES('delete',old.id,old.name);
+                   
+            INSERT INTO folders_fts(rowid, name)
+            VALUES(new.id,new.name);
+        END;
+    """)
+
     # ===========================================
     # Indexes
     # ===========================================
@@ -124,6 +181,20 @@ def initialize_database():
     cursor.execute("""
         CREATE INDEX IF NOT EXISTS idx_modified
         ON files(modified DESC) 
+    """)
+
+    # ===========================================
+    # Folder indexes
+    # ===========================================
+
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_folder_name
+        ON folders(name COLLATE NOCASE)
+    """)
+
+    cursor.execute("""
+        CREATE INDEX IF NOT EXISTS idx_folder_modified
+        ON folders(modified DESC)
     """)
     
     # ===========================================
@@ -163,6 +234,23 @@ def file_exists(path):
 
     cursor.execute(
         "SELECT 1 FROM files WHERE path=?",
+        (path,)
+    )
+
+    exists = cursor.fetchone() is not None
+
+    conn.close()
+
+    return exists
+
+def folder_exits(path):
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    cursor.execute(
+        "SELECT 1 FROM folders WHERE path=?",
         (path,)
     )
 
@@ -223,6 +311,49 @@ def insert_file(path):
     except Exception as e:
         print(f"[DB] insert_file error: {e}")
 
+def insert_folder(path):
+
+    if not os.path.isdir(path):
+        return
+    
+    try:
+
+        stat = os.stat(path)
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            INSERT INTO folder_exits
+            (
+                name,
+                path,
+                modified
+            )
+                       
+            VALUES (?, ?, ?)
+            ON CONFLICT(path)
+            DO UPDATE SET
+                    
+                name=excluded.name,
+                modified=excluded.modified
+        """,
+        (
+            os.path.basename(path),
+            path,
+            stat.st_mtime
+        ))
+
+        conn.commit()
+
+        conn.close()
+    
+    except Exception as e:
+
+        print(f"[DB] insert_folder error: {e}")
+
        
 def update_file(path):
 
@@ -282,6 +413,28 @@ def delete_file(path):
 
     except Exception as e:
         print(f"[DB] delete_file error: {e}")
+
+def delete_folder(path):
+
+    try:
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute(
+            "DELETE FROM folders WHERE path=?",
+
+            (path,)
+
+        )
+
+        conn.commit()
+        conn.close()
+
+    except Exception as e:
+
+        print(f"[DB] delete_folder error: {e}")
 
 
 # ==========================================
