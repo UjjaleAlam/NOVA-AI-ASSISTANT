@@ -17,6 +17,7 @@ from file_manager import (
     search_files,
     format_results,
     open_file,
+    open_file_path,
     found_files,
 
     search_folders,
@@ -359,7 +360,7 @@ def run_command(query):
 
                 if item:
 
-                    if open_file(item["stem"]):
+                    if open_file_path(item["path"]):
                         return "Opening."
 
             except ValueError:
