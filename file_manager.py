@@ -583,6 +583,28 @@ def open_folder(name):
     return True
 
 # ==========================================
+# OPEN FILE FROM SESSION
+# ==========================================
+
+def open_file_path(path):
+
+    if not path:
+        return False
+    
+    if not os.path.exists(path):
+        return False
+    
+    overlay_manager.hide()
+
+    QApplication.processEvents()
+
+    os.startfile(path)
+
+    record_open(path)
+
+    return True
+
+# ==========================================
 # FORMAT RESULTS
 # ==========================================
 
