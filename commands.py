@@ -1,10 +1,8 @@
 import os
 import json
 import re
-import webbrowser
-import urllib.parse
 import pyautogui
-import pywhatkit
+from core.browser_manager import browser_manager
 from memory import remember, recall, all_memory
 from pathlib import Path
 from ui.overlay_manager import overlay_manager
@@ -211,12 +209,12 @@ def run_command(query):
     # ==========================
 
     if query.startswith("play "):
-        video = query.replace("play ", "").strip()
-        try:
-            pywhatkit.playonyt(video)
-            return f"Playing {video}"
-        except Exception:
-            return f"Unable to play {video}"
+        media = query.replace("play ", "").strip()
+        success = browser_manager.play(media)
+        if success:
+            return f"Playing {media}"
+        
+        return f"Unable to play {media}"
 
     # ==========================
     # SEARCH YOUTUBE
@@ -224,8 +222,7 @@ def run_command(query):
 
     if query.startswith("search youtube "):
         term = query.replace("search youtube ", "").strip()
-        url = "https://www.youtube.com/results?search_query=" + urllib.parse.quote(term)
-        webbrowser.open(url)
+        browser_manager.youtube_search(term)
         return f"Searching YouTube for {term}"
 
     # ==========================
@@ -234,8 +231,7 @@ def run_command(query):
 
     if query.startswith("search "):
         search_term = query.replace("search ", "").strip()
-        url = "https://www.google.com/search?q=" + urllib.parse.quote(search_term)
-        webbrowser.open(url)
+        browser_manager.google_search(search_term)
         return f"Searching for {search_term}"
 
     # ==========================
@@ -412,7 +408,7 @@ def run_command(query):
             item = best_match
 
         if item in websites:
-            webbrowser.open(websites[item])
+            browser_manager.open_url(websites[item])
             return f"Opening {item}"
 
         if item in apps_db:
@@ -436,7 +432,7 @@ def run_command(query):
         site = query.replace("go to ", "").strip()
         site = site.replace(" ", "")
         url = f"https://www.{site}.com"
-        webbrowser.open(url)
+        browser_manager.open_url(url)
         return f"Opening {site}"
 
     # ==========================

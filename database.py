@@ -21,7 +21,7 @@ def get_connection():
 
     conn.execute("PRAGMA synchronous=NORMAL")
 
-    conn.execute("PRAGMA cacha_size=-32000")
+    conn.execute("PRAGMA cache_size=-32000")
 
     return conn
 
@@ -326,7 +326,7 @@ def insert_folder(path):
 
         cursor.execute("""
 
-            INSERT INTO folder_exits
+            INSERT INTO folders_exits
             (
                 name,
                 path,
