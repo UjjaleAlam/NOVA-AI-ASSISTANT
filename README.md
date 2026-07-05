@@ -56,19 +56,31 @@ NOVA serves as both a functional AI assistant and a platform for continuously im
 * Fact Recall System
 * Memory Search
 
-✅ Phase 5.1 – File Intelligence
+🚧 Phase 5 – File Intelligence
+
+Completed
 
 * File Discovery
 * Folder Search
-* PDF Search
-* Word Document Search
-* Excel File Search
-* PowerPoint Search
-* Python Project Search
+* File Indexing
+* Folder Indexing
+* PDF Reader
+* Word Document Reader
+* PowerPoint Reader
+* Excel Reader
+* Text File Reader
+* Unified Document Manager
+* Automatic Document Indexing
+* SQLite Full-Text Search (FTS5)
+* Document Search Backend
 
----
+Currently Working On
 
-## Current Development
+* Voice-Based Document Search
+* Document Summarization
+* File Operations
+* Search Ranking
+* Final Integration & Testing
 
 ### Phase 5.2 – File Reading & Analysis
 
@@ -97,10 +109,24 @@ Current work focuses on enabling NOVA to:
 * File Search & Discovery
 * Startup Automation
 * Context-Based Command Processing
+* Automatic File Indexing
+* Automatic Document Indexing
+* PDF Reading
+* Word Document Reading
+* PowerPoint Reading
+* Excel Spreadsheet Reading
+* Text File Reading
+* Full-Text Document Search
 
 ---
 
 ## Technology Stack
+### Document Processing
+
+* PyMuPDF
+* python-docx
+* python-pptx
+* openpyxl
 
 ### Programming Language
 
@@ -119,8 +145,9 @@ Current work focuses on enabling NOVA to:
 * OS Integration
 
 ### Data Storage
-
-* JSON-Based Memory System
+* SQLite Database
+* SQLite Full-Text Search (FTS5)
+* JSON Memory System
 
 ### Development Tools
 
