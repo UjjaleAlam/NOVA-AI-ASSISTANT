@@ -95,7 +95,35 @@ def initialize_database():
            tokenize='unicode61'
         )
     """)
-    
+
+    # ==========================================
+    # DOCUMENT CONTENTS
+    # (moved above the document_* triggers below --
+    #  the table must exist BEFORE a trigger can
+    #  target it, or CREATE TRIGGER fails with
+    #  "no such table: main.document_contents")
+    # ==========================================
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS document_contents(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            path TEXT UNIQUE NOT NULL,
+            extension TEXT,
+            content TEXT NOT NULL,
+            indexed REAL
+            )
+        """)
+
+    cursor.execute("""
+        CREATE VIRTUAL TABLE IF NOT EXISTS document_contents_fts
+        USING fts5(
+            content,
+            content='document_contents',
+            content_rowid='id',
+            tokenize='unicode61'
+        )
+    """)
+
     # ============================================
     # Triggers
     # ============================================
@@ -164,6 +192,68 @@ def initialize_database():
         END;
     """)
 
+    cursor.execute("""
+        CREATE TRIGGER IF NOT EXISTS document_ai
+        AFTER INSERT ON document_contents
+        BEGIN
+                   
+            INSERT INTO document_contents_fts(
+                rowid,
+                content
+            )
+            VALUES(
+                new.id,
+                new.content
+            );
+                   
+        END;
+    """)
+
+    cursor.execute("""
+        CREATE TRIGGER IF NOT EXISTS document_ad
+        AFTER DELETE ON document_contents
+        BEGIN
+        
+            INSERT INTO document_contents_fts(
+                document_contents_fts,
+                rowid, content
+            )
+            VALUES(
+                'delete',
+                old.id, 
+                old.content
+            );
+        END;
+    """)
+
+    cursor.execute("""
+        CREATE TRIGGER IF NOT EXISTS document_au
+        AFTER UPDATE ON document_contents
+        BEGIN
+
+            INSERT INTO document_contents_fts(
+                document_contents_fts,
+                rowid,
+                content
+            )
+            VALUES(
+                'delete',
+                old.id,
+                old.content
+            );
+
+            INSERT INTO document_contents_fts(
+                rowid,
+                content
+            )
+            VALUES(
+                new.id,
+                new.content
+            );
+
+        END;
+    """)
+
     # ===========================================
     # Indexes
     # ===========================================
@@ -217,7 +307,7 @@ def initialize_database():
             open_count INTEGER DEFAULT 1      
         )
     """)
-    
+
     conn.commit()
 
     conn.close()
@@ -326,7 +416,7 @@ def insert_folder(path):
 
         cursor.execute("""
 
-            INSERT INTO folders_exits
+            INSERT INTO folders
             (
                 name,
                 path,
@@ -392,6 +482,111 @@ def update_file(path):
 
     except Exception as e:
         print(f"[DB] update_file error: {e}")
+
+def save_document(
+        cursor,
+        path,
+        extension,
+        content
+):
+    import time
+
+    try:
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+            INSERT INTO document_contents(
+                path,
+                extension,
+                content,
+                indexed
+            )
+
+            VALUES (?, ?, ?, ?)
+                    
+            ON CONFLICT(path)
+            DO UPDATE SET
+                extension=excluded.extension,
+                content=excluded.content,
+                indexed=excluded.indexed
+        """,
+        (
+            path,
+            extension,
+            content,
+            time.time()
+        ))
+
+        conn.commit()
+        conn.close()
+
+    except Exception as e:
+
+        print(f"[DB] save_document error: {e}")
+
+def search_document_contents(
+        query,
+        limit=20
+):
+    
+    try:
+
+        conn = get_connection()
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+            SELECT
+                document_contents.path,
+                document_contents.extension,
+
+                snippet(
+                    document_contents_fts,
+                    0,
+                    "[",
+                    "]",
+                    "...",
+                    20
+                )
+
+            FROM document_contents_fts
+
+            JOIN document_contents
+
+            ON document_contents.id =
+               document_contents_fts.rowid
+
+            WHERE document_contents_fts MATCH ?
+
+            LIMIT ?
+        """,
+        (
+            query,
+            limit
+        ))
+
+        rows = cursor.fetchall()
+
+        conn.close()
+
+        return [
+            {
+                "path": row[0],
+                "extension": row[1],
+                "snippet": row[2]
+            }
+            for row in rows
+        ]
+    
+    except Exception as e:
+
+        print(f"[DB] search_document_contents error: {e}")
+
+        return []
 
 
 def delete_file(path):

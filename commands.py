@@ -3,6 +3,7 @@ import json
 import re
 import pyautogui
 from core.browser_manager import browser_manager
+from core.search_manager import search_manager
 from memory import remember, recall, all_memory
 from pathlib import Path
 from ui.overlay_manager import overlay_manager
@@ -479,6 +480,31 @@ def run_command(query):
             return f"Switching to {app}"
         return f"Could not find {app}"
 
+    # ==========================
+    # DOCUMENT CONTENT SEARCH
+    # ==========================
+
+    if query.startswith("find documents containing "):
+
+        try:
+            keyword = query.replace(
+                "find documents containing ",
+                ""
+            ).strip()
+
+            results = search_manager.search_documents(
+                keyword,
+                limit=500
+            )
+
+            if not results:
+                return f"I couldn't find any documents containing {keyword}."
+        
+            return format_results(results)
+        
+        except Exception as e:
+            print("Error searching documents:", e)
+            return "An error occurred while searching for documents."
 
     # ==========================
     # FILE SEARCH

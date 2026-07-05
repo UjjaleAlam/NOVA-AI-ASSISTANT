@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from core.document_indexer import document_indexer
 from database import (
     get_connection,
     rebuild_fts,
@@ -120,6 +121,11 @@ def build_file_index():
                             stat.st_size,
                             stat.st_mtime
                         )
+                    )
+
+                    document_indexer.index_document(
+                        cursor,
+                        path
                     )
 
                     total += 1
