@@ -121,6 +121,11 @@ def run_command(query):
 
     query = query.lower().strip()
 
+    print("=" * 60)
+    print("RUN COMMAND")
+    print("QUERY:", repr(query))
+    print("=" * 60)
+
     # =========================
     # MEMORY
     # =========================
@@ -480,31 +485,34 @@ def run_command(query):
             return f"Switching to {app}"
         return f"Could not find {app}"
 
+    print("Reached document search block")
+
     # ==========================
     # DOCUMENT CONTENT SEARCH
     # ==========================
 
     if query.startswith("find documents containing "):
 
-        try:
-            keyword = query.replace(
-                "find documents containing ",
-                ""
-            ).strip()
+        print("DOCUMENT COMMAND MATCHED")
 
-            results = search_manager.search_documents(
-                keyword,
-                limit=500
-            )
+        keyword = query.replace(
+            "find documents containing ",
+            ""
+        ).strip()
 
-            if not results:
-                return f"I couldn't find any documents containing {keyword}."
+        print("Keyword:", keyword)
+
+        results = search_manager.search_documents(
+            keyword,
+            limit=20  
+        )
+
+        print("Results:", results)
+
+        if not results:
+            return "no matching documents found."
         
-            return format_results(results)
-        
-        except Exception as e:
-            print("Error searching documents:", e)
-            return "An error occurred while searching for documents."
+        return str(results)
 
     # ==========================
     # FILE SEARCH
