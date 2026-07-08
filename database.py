@@ -493,10 +493,6 @@ def save_document(
 
     try:
 
-        conn = get_connection()
-
-        cursor = conn.cursor()
-
         cursor.execute("""
             INSERT INTO document_contents(
                 path,
@@ -519,9 +515,6 @@ def save_document(
             content,
             time.time()
         ))
-
-        conn.commit()
-        conn.close()
 
     except Exception as e:
 

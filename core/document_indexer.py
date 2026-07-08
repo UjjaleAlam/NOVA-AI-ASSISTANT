@@ -19,25 +19,20 @@ class DocumentIndexer:
     ):
 
         if not is_supported(path):
-
             return False
 
         text = document_manager.extract(path)
 
         if not text:
-
             return False
 
         extension = Path(path).suffix.lower()
 
         save_document(
-
+            cursor,
             path,
-
             extension,
-
             text
-
         )
 
         return True
