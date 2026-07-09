@@ -4,6 +4,7 @@ from database import (
     record_open
 )
 from core.session import session
+from pathlib import Path
 from ui.overlay_manager import overlay_manager
 from ui.models.selection_item import SelectionItem
 from core.file_icons import get_file_icon
@@ -681,3 +682,68 @@ def format_folder_results(results):
     )
 
     return f"I found {len(display)} folders."
+
+def format_document_results(results):
+
+    if not results:
+        return "I couldn't find any matching documents."
+    
+    display = []
+
+    for document in results:
+
+        display.append(
+            {
+                "name": Path(document["path"]).name,
+                "stem": Path(document["path"]).stem,
+                "path": document["path"],
+                "extension": document["extension"],
+            }
+        )
+
+    session.start(
+        session_type="document_search",
+        results=display,
+        title=f"{len(display)} Documents"
+    )
+
+    overlay_manager.show_files(
+        display,
+        callback=None,
+        title=f"{len(display)} Documents"
+    )
+
+    return f"I found {len(display)} matching documents"
+
+def format_universal_results(results):
+
+    if not results:
+        return "I couldn't find anything."
+    
+    display = []
+
+    for item in results:
+
+        display.append(
+            {
+                "name": item.get("name", Path(item["path"]).name),
+                "stem": item.get("stem", Path(item["path"]).stem),
+                "path": item["path"],
+                "extension": item.get("extension", ""),
+                "type": item.get("type", "file")
+            }
+        )
+
+        session.start(
+            session_type="universal_search",
+            results=display,
+            title=f"{len(display)} Results"
+        )
+
+        overlay_manager.show_files(
+            display,
+            callback=None,
+            title=f"{len(display)} Results"
+        )
+
+        return f"I found {len(display)} matching items"

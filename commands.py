@@ -15,6 +15,8 @@ import pygetwindow as gw
 from file_manager import (
     search_files,
     format_results,
+    format_document_results,
+    format_universal_results,
     open_file,
     open_file_path,
     found_files,
@@ -120,11 +122,6 @@ def run_command(query):
     global APPS_DB
 
     query = query.lower().strip()
-
-    print("=" * 60)
-    print("RUN COMMAND")
-    print("QUERY:", repr(query))
-    print("=" * 60)
 
     # =========================
     # MEMORY
@@ -484,8 +481,44 @@ def run_command(query):
         if switch_to_window(app):
             return f"Switching to {app}"
         return f"Could not find {app}"
+    
+    # ==========================
+    # RECENT FILES
+    # ==========================
 
-    print("Reached document search block")
+    if query in {
+        "recent files",
+        "show recent files",
+        "recent documents"
+    }:
+        
+        results = search_manager.search_recent(limit=20)
+
+        if not results:
+            return "You have no recent files."
+        
+        return format_results(results)
+    
+    # ==========================
+    # UNIVERSAL SEARCH
+    # ==========================
+
+    if query.startswith("find everything "):
+
+        keyword = query.replace(
+            "find everything ",
+            ""
+        ).strip()
+
+        results = search_manager.search(
+            keyword,
+            limit=20
+        )
+
+        if not results:
+            return"I couldn't find anything."
+        
+        return format_universal_results(results)
 
     # ==========================
     # DOCUMENT CONTENT SEARCH
@@ -493,26 +526,20 @@ def run_command(query):
 
     if query.startswith("find documents containing "):
 
-        print("DOCUMENT COMMAND MATCHED")
-
         keyword = query.replace(
             "find documents containing ",
             ""
         ).strip()
-
-        print("Keyword:", keyword)
 
         results = search_manager.search_documents(
             keyword,
             limit=20  
         )
 
-        print("Results:", results)
-
         if not results:
             return "no matching documents found."
         
-        return str(results)
+        return format_document_results(results)
 
     # ==========================
     # FILE SEARCH
