@@ -1,11 +1,14 @@
+from importlib.metadata import files
+
 from database import (
     search_document_contents,
 )
+from database import get_recent_files
 
 # Later
 # from file_manager import search_files
 # from file_manager import search_folders
-# from database import get_recent_files
+# from database import get_recent_files(done)
 
 
 class SearchManager:
@@ -57,7 +60,7 @@ class SearchManager:
     ):
 
         # TODO
-        return []
+        return get_recent_files(limit)
 
     # ==========================================
 
@@ -69,31 +72,36 @@ class SearchManager:
 
         results = []
 
-        # Files
-        results.extend(
-            self.search_files(
-                query,
-                limit
-            )
+        files = self.search_files(
+        query,
+        limit
+       )
+
+        for item in files:
+            item["type"] = "file"
+
+        results.extend(files)
+
+        folders = self.search_folders(
+             query,
+             limit
         )
 
-        # Folders
-        results.extend(
-            self.search_folders(
-                query,
-                limit
-            )
+        for item in folders:
+             item["type"] = "folder"
+
+        results.extend(folders)
+
+        documents = self.search_documents(
+            query,
+            limit
         )
 
-        # Documents
-        results.extend(
-            self.search_documents(
-                query,
-                limit
-            )
-        )
+        for item in documents:
+            item["type"] = "document"
+
+        results.extend(documents)
 
         return results
-
 
 search_manager = SearchManager()
