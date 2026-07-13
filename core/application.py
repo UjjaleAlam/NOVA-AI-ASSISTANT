@@ -1,4 +1,5 @@
 import sys
+import threading
 
 from PySide6.QtWidgets import QApplication
 
@@ -7,6 +8,8 @@ from core.command_dispatcher import CommandDispatcher
 from core.signal_bus import signal_bus
 
 from ui.overlay_manager import overlay_manager
+
+from watchdog_manager import start_watchdog
 
 
 class NovaApplication:
@@ -32,6 +35,11 @@ class NovaApplication:
     def setup(self):
 
         self.voice_thread, self.voice_worker = create_voice_thread()
+
+        threading.Thread(
+            target=start_watchdog,
+            daemon=True
+        ).start()
 
         signal_bus.hide_overlay.connect(
             overlay_manager.hide

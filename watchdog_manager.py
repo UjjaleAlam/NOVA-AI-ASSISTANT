@@ -4,9 +4,17 @@ import time
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-from event_queue import add_event
-from event_worker import start_worker
 from watch_manager import load_watch_list
+from database import (
+    insert_file,
+    update_file,
+    delete_file,
+    insert_folder,
+    delete_folder,
+    get_connection,
+)
+from core.document_indexer import document_indexer
+from core.document_types import is_supported
 
 
 # ==========================================================
@@ -94,84 +102,80 @@ class NovaFileHandler(FileSystemEventHandler):
 
     def on_created(self, event):
 
-        if event.is_directory:
-            return
+        insert_file(event.src_path)
 
-        if should_ignore(event.src_path):
-            return
+        folder = os.path.dirname(event.src_path)
+        insert_folder(folder)
 
-        add_event(
-            "created",
-            event.src_path
-        )
+        if is_supported(event.src_path):
+
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            document_indexer.index_document(
+                cursor,
+                event.src_path
+            )
+
+            conn.commit()
+            conn.close()
 
         print(f"[WATCHDOG] Created : {event.src_path}")
 
-
     def on_modified(self, event):
 
-        if event.is_directory:
-            return
+        update_file(event.src_path)
 
-        if should_ignore(event.src_path):
-            return
+        if is_supported(event.src_path):
 
-        add_event(
-            "modified",
-            event.src_path
-        )
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            document_indexer.index_document(
+                cursor,
+                event.src_path
+            )
+
+            conn.commit()
+            conn.close()
 
         print(f"[WATCHDOG] Modified : {event.src_path}")
 
 
     def on_deleted(self, event):
 
-        if event.is_directory:
-            return
-
-        if should_ignore(event.src_path):
-            return
-
-        add_event(
-            "deleted",
-            event.src_path
-        )
+        delete_file(event.src_path)
 
         print(f"[WATCHDOG] Deleted : {event.src_path}")
 
-
     def on_moved(self, event):
 
-        if event.is_directory:
-            return
+        delete_file(event.src_path)
 
-        if should_ignore(event.src_path):
-            return
+        insert_file(event.dest_path)
 
-        if should_ignore(event.dest_path):
-            return
-        
-        if event.src_path == event.dest_path:
-            return
+        if is_supported(event.dest_path):
 
-        add_event(
-            "moved",
-            event.src_path,
-            event.dest_path
-        ) 
+            conn = get_connection()
+            cursor = conn.cursor()
+
+            document_indexer.index_document(
+                cursor,
+                event.dest_path
+            )
+
+            conn.commit()
+            conn.close()
 
         print(f"[WATCHDOG] Moved")
         print(f"    From: {event.src_path}")
-        print(f"    To  : {event.dest_path}")
-
-
+        print(f"    To: {event.dest_path}")
+        
 # ==========================================================
 # WATCHDOG
 # ==========================================================
 
 def start_watchdog():
-
-    start_worker()
 
     observer = Observer()
 

@@ -117,6 +117,65 @@ def switch_to_window(app_name):
         pass
     return False
 
+SMART_DOCUMENT_WORDS = {
+    "document",
+    "documents",
+    "pdf",
+    "pdfs",
+    "word",
+    "doc",
+    "docx",
+    "excel",
+    "xlsx",
+    "sheet",
+    "spreadsheet",
+    "powerpoint",
+    "ppt",
+    "pptx",
+    "presentation",
+    "presentations",
+    "slide",
+    "slides",
+}
+
+SMART_FOLDER_WORDS = {
+    "folder",
+    "folders",
+    "directory",
+    "directories",
+}
+
+SMART_IGNORE_WORDS = {
+    "find",
+    "show",
+    "display",
+    "search",
+    "open",
+    "my",
+    "the",
+    "a",
+    "an",
+    "please",
+}
+
+def extract_search_keyword(query):
+
+    words = []
+
+    for word in query.lower().split():
+        if word in SMART_IGNORE_WORDS:
+            continue
+
+        if word in SMART_DOCUMENT_WORDS:
+            continue
+
+        if word in SMART_FOLDER_WORDS:
+            continue
+
+        words.append(word)
+
+    return " ".join(words)
+
 def run_command(query):
 
     global APPS_DB
@@ -526,6 +585,27 @@ def run_command(query):
 
     if query.startswith("find documents containing "):
 
+        # --------------------------
+        # SMART DOCUMENT SEARCH
+        # --------------------------
+
+        words = query.split()
+
+        if any(word in SMART_DOCUMENT_WORDS for word in words):
+            keyword = extract_search_keyword(query)
+
+            if keyword:
+                results = search_manager.search_documents(
+                    keyword,
+                    limit=20
+                )
+
+                if results:
+                    return format_document_results(results)
+        # --------------------------
+        # Normal Document Search
+        # --------------------------
+        
         keyword = query.replace(
             "find documents containing ",
             ""
