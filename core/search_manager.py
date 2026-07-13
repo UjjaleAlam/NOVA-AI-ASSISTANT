@@ -4,10 +4,12 @@ from database import (
     search_document_contents,
 )
 from database import get_recent_files
+from file_manager import(
+    search_files,
+    search_folders,
+)
 
 # Later
-# from file_manager import search_files
-# from file_manager import search_folders
 # from database import get_recent_files(done)
 
 
@@ -26,7 +28,7 @@ class SearchManager:
     ):
 
         # TODO
-        return []
+        return search_files(query, limit)
 
     # ==========================================
 
@@ -37,7 +39,7 @@ class SearchManager:
     ):
 
         # TODO
-        return []
+        return search_folders(query, limit)
 
     # ==========================================
 

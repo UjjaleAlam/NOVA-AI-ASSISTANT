@@ -734,16 +734,16 @@ def format_universal_results(results):
             }
         )
 
-        session.start(
-            session_type="universal_search",
-            results=display,
-            title=f"{len(display)} Results"
-        )
+    session.start(
+        session_type="universal_search",
+        results=display,
+        title=f"{len(display)} Results"
+    )
 
-        overlay_manager.show_files(
-            display,
-            callback=None,
-            title=f"{len(display)} Results"
-        )
+    overlay_manager.show_files(
+        display,
+        callback=None,
+        title=f"{len(display)} Results"
+    )
 
-        return f"I found {len(display)} matching items"
+    return f"I found {len(display)} matching items"
