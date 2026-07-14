@@ -55,18 +55,33 @@ FILE_ALIASES = {
     "photos": "images",
     "picture": "images",
     "pictures": "images",
+    "pic": "images",
+    "pics": "images",
+    "wallpaper": "images",
+    "wallpapers": "images",
+    "screenshot": "images",
+    "icon": "images",
+    "icons": "images",
 
     # Video
     "video": "videos",
     "videos": "videos",
     "movie": "videos",
     "movies": "videos",
+    "clip": "videos",
+    "clips": "videos",
+    "film": "videos",
+    "films": "videos",
 
     # Music
     "music": "music",
     "song": "music",
     "songs": "music",
     "audio": "music",
+    "recording": "music",
+    "recordings": "music" ,
+    "sound": "music",
+    "sounds": "music",
 
     # Python
     "python": "python",
@@ -96,6 +111,22 @@ FILE_ALIASES = {
     "folders": "folder",
     "directory": "folder",
     "directories": "folder",
+
+    #Archives
+    "rar": "zip",
+    "7z": "zip",
+    "compressed file": "zip",
+    "compressed files": "zip",
+
+    #Developers Files
+    "markdown": "markdown",
+    "md": "markdown",
+    "yaml": "yaml",
+    "yml": "yaml",
+    "log": "log",
+    "logs": "log",
+    "batch": "bat",
+    "powershell": "ps1", 
 
 }
 
@@ -152,6 +183,33 @@ def normalize_search_query(query):
         )
 
     return normalized
+# ==========================================
+# File size identifier
+# ==========================================
+def extract_size_filter(query):
+
+    query = query.lower()
+
+    patterns = [
+        ("gb", 1024 * 1024 * 1024),
+        ("mb", 1024 * 1024),
+        ("kb", 1024),
+    ]
+
+    for unit, multiplier in patterns:
+
+        if unit in query:
+            try:
+
+                number = float(
+                    query.split(unit)[0].split()[-1]
+                )
+
+                return int(number * multiplier)
+            
+            except Exception:
+                pass
+        return None
 
 # ==========================================
 # FILE TYPES
@@ -188,15 +246,25 @@ FILE_TYPES = {
 
     "sql": [".sql"],
 
-    "images": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp"],
+    "images": [".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp", ".tif", ".tiff", ".ico", ".svg", ".heic"],
 
-    "videos": [".mp4", ".mkv", ".avi", ".mov", ".wmv"],
+    "videos": [".mp4", ".mkv", ".avi", ".mov", ".wmv", ".flv", ".webm", ".mpeg", ".mpg", ".m4v", ".3gp"],
 
-    "music": [".mp3", ".wav", ".aac", ".flac"],
+    "music": [".mp3", ".wav", ".aac", ".flac", ".ogg", ".m4a", ".wma"],
 
-    "zip": [".zip", ".rar", ".7z"],
+    "zip": [".zip", ".rar", ".7z", ".tar", ".gz", ".bz2", ".xz"],
 
-    "iso": [".iso"]
+    "iso": [".iso"],
+
+    "markdown" : [".md"],
+
+    "yaml" : [".yaml", ".yml"],
+    "toml" : [".toml"],
+    "ini" : [".ini"],
+    "log" : [".log"],
+    "bat" : [".bat"],
+    "ps1" : [".ps1"],
+    "sh" : [".sh"],
 }
 
 # ==========================================
@@ -216,6 +284,11 @@ def search_files(keyword, limit=500):
 
     keywords = normalize_search_query(keyword)
 
+    size_filter = extract_size_filter(keyword)
+
+    is_large = "larger than" in keyword or "bigger than" in keyword
+    is_small = "smaller than" in keyword or "less than" in keyword
+
     if not keywords:
         return []
     
@@ -234,6 +307,53 @@ def search_files(keyword, limit=500):
         else:
 
             search_words.append(word)
+
+    # ------------------------------------
+    # SIZE Search
+    # ------------------------------------
+
+    if size_filter is not None:
+        operator = ">=" if is_large else "<="
+
+        cursor.execute(
+            f"""
+            SELECT
+                name,
+                path,
+                extension
+            FROM files
+            WHERE size {operator} ?
+            ORDER BY size DESC
+            LIMIT ?
+            """,
+            (
+                size_filter,
+                limit
+            )
+        )
+
+        rows = cursor.fetchall()
+
+        conn.close()
+
+        results = []
+
+        for name, path, extension in rows:
+
+            results.append(
+                {
+                    "name": name,
+                    "stem": os.path.splitext(name)[0],
+                    "path": path,
+                    "extension": extension
+                }
+            )
+
+            return results
+        
+    # -------------------------------------
+    # Normal Search
+    # -------------------------------------
 
     if extensions:
 

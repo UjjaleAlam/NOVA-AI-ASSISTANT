@@ -1,14 +1,12 @@
-from importlib.metadata import files
+from core.search_parser import search_parser
+from core.search_engine import search_engine
+from pathlib import Path
 
 from database import (
     search_document_contents,
 )
 from database import get_recent_files
-from file_manager import(
-    search_files,
-    search_folders,
-)
-
+from file_manager import search_folders
 # Later
 # from database import get_recent_files(done)
 
@@ -26,9 +24,27 @@ class SearchManager:
         query,
         limit=20
     ):
+        
+        search_filter = search_parser.parse(query)
 
-        # TODO
-        return search_files(query, limit)
+        search_filter.limit = limit
+
+        rows = search_engine.search(search_filter)
+
+        results = []
+
+        for name, path, extension in rows:
+
+            results.append(
+                {
+                    "name": name,
+                    "stem": Path(name).stem,
+                    "path": path,
+                    "extension": extension,
+                }
+            )
+
+        return results
 
     # ==========================================
 
@@ -37,9 +53,11 @@ class SearchManager:
         query,
         limit=20
     ):
-
-        # TODO
-        return search_folders(query, limit)
+        
+        return search_engine.search_folders(
+            query,
+            limit
+            )
 
     # ==========================================
 
