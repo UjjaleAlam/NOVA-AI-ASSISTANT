@@ -1,5 +1,6 @@
 from database import get_connection
-
+from database import search_document_contents
+from database import get_recent_files
 
 class SearchEngine:
 
@@ -171,6 +172,24 @@ class SearchEngine:
             )
 
         return results
+    
+    def search_documents(
+            self,
+            query,
+            limit=20
+    ):
+        
+        return search_document_contents(
+            query,
+            limit
+        )
+    
+    def search_recent(
+            self,
+            limit=20
+    ):
+        
+        return get_recent_files(limit)
 
 
 search_engine = SearchEngine()
