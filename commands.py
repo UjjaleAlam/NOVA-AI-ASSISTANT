@@ -13,7 +13,6 @@ from core.folder_operations import create_folder
 import psutil
 import pygetwindow as gw
 from file_manager import (
-    search_files,
     format_results,
     format_document_results,
     format_universal_results,
@@ -21,7 +20,6 @@ from file_manager import (
     open_file_path,
     found_files,
 
-    search_folders,
     format_folder_results,
     open_folder
 )
@@ -686,7 +684,7 @@ def run_command(query):
 
         if is_folder_search:
 
-            results = search_folders(
+            results = search_manager.search_folders(
                 keyword,
                 limit=500
             )
@@ -704,7 +702,7 @@ def run_command(query):
         # File Search
         # ----------------------------------
 
-        results = search_files(
+        results = search_manager.search_files(
             keyword,
             limit=500
         )

@@ -67,7 +67,7 @@ class SearchManager:
         limit=20
     ):
 
-        return search_document_contents(
+        return search_engine.search_documents(
             query,
             limit
         )
@@ -80,7 +80,7 @@ class SearchManager:
     ):
 
         # TODO
-        return get_recent_files(limit)
+        return search_engine.search_recent(limit)
 
     # ==========================================
 
