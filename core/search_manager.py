@@ -6,7 +6,6 @@ from database import (
     search_document_contents,
 )
 from database import get_recent_files
-from file_manager import search_folders
 # Later
 # from database import get_recent_files(done)
 
