@@ -149,7 +149,7 @@ class SearchEngine:
                 LIMIT ?
                 """,
                 (
-                    "%{keyword.lower()}%",
+                    f"%{keyword.lower()}%",
                     limit
                 )
             )
