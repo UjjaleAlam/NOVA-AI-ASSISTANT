@@ -10,6 +10,7 @@ from ui.overlay_manager import overlay_manager
 from rapidfuzz import process
 from core.session import session
 from core.folder_operations import create_folder
+from core.vision.vision_command import vision_commands
 import psutil
 import pygetwindow as gw
 from file_manager import (
@@ -812,5 +813,16 @@ def run_command(query):
     if query == "mute":
         pyautogui.press("volumemute")
         return "Muting volume"
+
+    # ============================
+    # VISION
+    # ============================
+
+    if query in [
+        "read my screen",
+        "what is on my screen",
+        "read screen",
+    ]:
+        return vision_commands.read_screen()
 
     return None
