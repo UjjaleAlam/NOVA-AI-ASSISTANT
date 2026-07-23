@@ -1,223 +1,302 @@
 # NOVA AI Assistant
 
-## Personal AI Operating System
+# Personal AI Operating System
 
-NOVA is an ongoing artificial intelligence assistant project developed to explore and implement advanced concepts in software engineering, automation, voice interaction, and intelligent systems.
+NOVA is a modular AI-powered desktop assistant designed to operate as a Personal AI Operating System.
 
-The project began in March 2026 as a practical learning initiative and has since evolved into a long-term effort to build a comprehensive AI-powered personal assistant capable of understanding voice commands, managing files, automating workflows, maintaining memory, and assisting with research, learning, and productivity.
+The project began in March 2026 as a practical software engineering and AI learning initiative. It has since evolved into a long-term project focused on building a voice-first intelligent assistant capable of understanding natural language, managing files, interacting with desktop applications, maintaining long-term memory, understanding screen content, and automating everyday workflows.
 
-NOVA serves as both a functional AI assistant and a platform for continuously improving my skills in Python development, AI integration, system architecture, automation, and problem-solving.
+Every feature is built with a modular architecture to ensure scalability, maintainability, and future expansion.
 
 ---
 
-## Project Status
+# Development Status
 
-**Development Status:** Active
+**Status:** Active Development
 
 **Started:** March 2026
 
-### Completed Phases
+Current Phase:
 
-✅ Phase 1 – Voice Stability
-
-* Speech Recognition
-* Voice Output
-* Background Listening
-* Startup Assistant
-
-✅ Phase 2 – Reliability Layer
-
-* Error Handling
-* Logging System
-* Command Recovery
-* Stability Improvements
-
-✅ Phase 2.5 – Voice Optimization
-
-* Reduced Response Latency
-* Improved Recognition Accuracy
-* Microphone Calibration
-* Single-Listen Mode
-
-✅ Phase 3 – Desktop Control
-
-* Application Launching
-* Website Navigation
-* Google Search
-* YouTube Search
-* Media Controls
-* Screenshot Capture
-* Window Management
-
-✅ Phase 4 – Memory System
-
-* Persistent Memory
-* User Preference Storage
-* Fact Recall System
-* Memory Search
-
-🚧 Phase 5 – File Intelligence
-
-Completed
-
-* File Discovery
-* Folder Search
-* File Indexing
-* Folder Indexing
-* PDF Reader
-* Word Document Reader
-* PowerPoint Reader
-* Excel Reader
-* Text File Reader
-* Unified Document Manager
-* Automatic Document Indexing
-* SQLite Full-Text Search (FTS5)
-* Document Search Backend
-
-Currently Working On
-
-* Voice-Based Document Search
-* Document Summarization
-* File Operations
-* Search Ranking
-* Final Integration & Testing
-
-### Phase 5.2 – File Reading & Analysis
-
-Current work focuses on enabling NOVA to:
-
-* Read PDF documents
-* Read Word documents
-* Read PowerPoint presentations
-* Read Excel spreadsheets
-* Extract important information
-* Generate intelligent summaries
+🚧 **Phase 6 – Vision AI**
 
 ---
 
-## Current Capabilities
+# Completed Phases
 
-* Wake Word Detection
-* Voice Commands
-* Speech Recognition
-* Natural Voice Responses
-* Application Control
-* Website Navigation
-* Google Search Integration
-* YouTube Search Integration
-* Persistent Memory System
-* File Search & Discovery
-* Startup Automation
-* Context-Based Command Processing
-* Automatic File Indexing
-* Automatic Document Indexing
-* PDF Reading
-* Word Document Reading
-* PowerPoint Reading
-* Excel Spreadsheet Reading
-* Text File Reading
-* Full-Text Document Search
+## ✅ Phase 1 — Voice Stability
+
+- Wake Word Detection
+- Speech Recognition
+- Natural Voice Responses
+- Background Listening
+- Startup Assistant
 
 ---
 
-## Technology Stack
-### Document Processing
+## ✅ Phase 2 — Reliability Layer
 
-* PyMuPDF
-* python-docx
-* python-pptx
-* openpyxl
-
-### Programming Language
-
-* Python
-
-### Speech Processing
-
-* SpeechRecognition
-* Edge-TTS
-
-### Automation & System Control
-
-* PyAutoGUI
-* Webbrowser
-* Subprocess
-* OS Integration
-
-### Data Storage
-* SQLite Database
-* SQLite Full-Text Search (FTS5)
-* JSON Memory System
-
-### Development Tools
-
-* Git
-* GitHub
-* Visual Studio Code
-
-### Learning & Development Resources
-
-* Official Documentation
-* Developer Communities
-* ChatGPT
-* Claude
-
-AI-assisted tools are used for learning, debugging, troubleshooting, and exploring implementation approaches during development.
+- Error Handling
+- Logging
+- Recovery Mechanisms
+- Stability Improvements
 
 ---
 
-## Future Roadmap
+## ✅ Phase 2.5 — Voice Optimization
 
-Planned future development includes:
-
-### Phase 6 – Vision AI
-
-* Screen Understanding
-* OCR
-* Screenshot Analysis
-* Error Recognition
-
-### Phase 7 – Context Extraction
-
-* Activity Tracking
-* Workflow Awareness
-* Task Understanding
-
-### Phase 8 – Coding Assistant
-
-* Code Generation
-* Bug Detection
-* Project Analysis
-* GitHub Integration
-
-### Phase 9 – Smart Research Assistant
-
-* Deep Research
-* Technology Analysis
-* Multi-Source Summaries
-* Fact Verification
-
-### Long-Term Vision
-
-The long-term objective is to transform NOVA into a complete Personal AI Operating System capable of:
-
-* Natural Conversations
-* Continuous Context Awareness
-* Intelligent Memory
-* Lecture Intelligence
-* Research Assistance
-* Coding Assistance
-* Data Analysis Support
-* Workflow Automation
-* Offline AI Operation
-* Multi-Agent Collaboration
+- Reduced Response Latency
+- Improved Recognition Accuracy
+- Microphone Calibration
+- Single-Listen Processing
 
 ---
 
-## Purpose
+## ✅ Phase 3 — Desktop Control
 
-This project represents my ongoing journey in learning software development, artificial intelligence, automation, and system design through practical implementation.
+- Application Launching
+- Window Switching
+- Window Management
+- Website Navigation
+- Google Search
+- YouTube Search
+- Media Controls
+- Screenshot Capture
 
-Rather than focusing solely on theoretical learning, NOVA is being developed as a real-world engineering project where new concepts are continuously researched, implemented, tested, and improved over time.
+---
 
-Every phase of development contributes to expanding both the capabilities of the assistant and my understanding of modern software and AI systems.
+## ✅ Phase 4 — Memory System
+
+- Persistent Memory
+- User Preference Storage
+- Fact Recall
+- Memory Search
+
+---
+
+## ✅ Phase 5 — File Intelligence
+
+### Search System
+
+- File Search
+- Folder Search
+- Universal Search
+- Search Ranking
+- File Opening
+- Folder Opening
+- Recent Files
+
+### File Intelligence
+
+- Automatic File Indexing
+- Automatic Folder Indexing
+- SQLite Database
+- SQLite FTS5 Search
+- Document Search
+
+### Supported Documents
+
+- PDF
+- Word
+- PowerPoint
+- Excel
+- Text Files
+
+---
+
+# 🚧 Phase 6 — Vision AI
+
+Currently Developing
+
+- Screen Capture
+- OCR Engine
+- Vision Manager
+- Vision Command System
+- Screen Text Recognition
+- Region Text Recognition
+- Vision Pipeline
+
+Planned
+
+- Active Window Recognition
+- Screen Understanding
+- Error Recognition
+- Code Recognition
+- Smart OCR Cleanup
+- Screenshot Analysis
+- Visual Context Awareness
+
+---
+
+# Current Features
+
+## Voice
+
+- Wake Word Detection
+- Speech Recognition
+- Natural Voice Responses
+- Voice Command Processing
+
+## Desktop Automation
+
+- Application Control
+- Window Management
+- Website Navigation
+- Browser Integration
+- Media Controls
+- Screenshot Capture
+
+## Memory
+
+- Persistent Memory
+- Fact Recall
+- User Preferences
+
+## File Intelligence
+
+- File Search
+- Folder Search
+- Universal Search
+- Recent Files
+- File Opening
+- Folder Opening
+- Document Search
+
+## Document Processing
+
+- PDF Reader
+- Word Reader
+- PowerPoint Reader
+- Excel Reader
+- Text Reader
+
+## Vision
+
+- Screen Capture
+- OCR
+- Screen Reading
+- Region Reading
+
+---
+
+# Architecture
+
+```
+Voice
+        │
+        ▼
+Command Dispatcher
+        │
+        ▼
+Command Modules
+        │
+ ┌──────┴─────────┐
+ ▼                ▼
+Search        Vision
+ │                │
+ ▼                ▼
+SQLite      Screen Capture
+ │                │
+ ▼                ▼
+Documents     OCR Engine
+                  │
+                  ▼
+            Vision Engine
+```
+
+---
+
+# Technology Stack
+
+## Programming
+
+- Python
+
+## User Interface
+
+- PySide6
+
+## Speech
+
+- SpeechRecognition
+- Edge-TTS
+
+## Vision
+
+- EasyOCR
+- Pillow
+- MSS
+
+## Document Processing
+
+- PyMuPDF
+- python-docx
+- python-pptx
+- openpyxl
+
+## Database
+
+- SQLite
+- SQLite FTS5
+- JSON
+
+## Automation
+
+- PyAutoGUI
+- psutil
+- pygetwindow
+- subprocess
+- os
+
+## Development
+
+- Git
+- GitHub
+- Visual Studio Code
+
+---
+
+# Future Roadmap
+
+## Phase 7 — Context Intelligence
+
+- Activity Tracking
+- Workflow Awareness
+- Context Understanding
+- User Behavior Learning
+
+## Phase 8 — Coding Assistant
+
+- Code Analysis
+- Bug Detection
+- Project Understanding
+- GitHub Integration
+
+## Phase 9 — Research Assistant
+
+- Deep Research
+- Multi-Source Analysis
+- Fact Verification
+- Intelligent Summaries
+
+## Long-Term Vision
+
+The goal of NOVA is to become a complete Personal AI Operating System capable of:
+
+- Natural Conversations
+- Long-Term Memory
+- Vision Understanding
+- Coding Assistance
+- Research Assistance
+- Workflow Automation
+- Data Analysis
+- Offline AI Operation
+- Multi-Agent Collaboration
+
+---
+
+# Purpose
+
+NOVA is a long-term engineering project created to strengthen practical skills in software engineering, artificial intelligence, automation, desktop application development, and system architecture.
+
+Every feature is researched, designed, implemented, tested, and continuously improved with a strong focus on modular architecture, maintainability, and real-world usability.
