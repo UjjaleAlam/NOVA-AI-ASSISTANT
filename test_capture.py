@@ -1,10 +1,10 @@
-from core.vision.vision_manager import vision_manager
+from pprint import pprint
 
-text = vision_manager.capture_region_text(
-    200,
-    200,
-    600,
-    400
-)
+from core.vision.screen_capture import screen_capture
+from core.vision.ocr_engine import ocr_engine
 
-print(text)
+image = screen_capture.capture_screen()
+
+blocks = ocr_engine.extract_blocks(image)
+
+pprint(blocks[:5])

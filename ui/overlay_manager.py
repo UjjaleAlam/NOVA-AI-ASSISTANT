@@ -1,7 +1,7 @@
 from collections import deque
 
 from ui.overlays.selection_overlay import SelectionOverlay
-
+from ui.overlays.vision_overlay import VisionOverlay
 
 class OverlayManager:
 
@@ -12,6 +12,8 @@ class OverlayManager:
         self.queue = deque()
 
         self.overlay_visible = False
+
+        self.vision_overlay = None
 
     # ======================================================
 
@@ -95,6 +97,40 @@ class OverlayManager:
         if self.selection_overlay:
 
             self.selection_overlay.hide_overlay()
+
+    # =======================================================
+
+    def get_vision_overlay(self):
+
+        if self.vision_overlay is None:
+
+            self.vision_overlay = VisionOverlay()
+
+            self.vision_overlay.closed.connect(
+                self.overlay_closed
+            )
+
+        return self.vision_overlay
+    
+    # =========================================================
+
+    def show_vision(
+            self,
+            text,
+            title="Vision"
+    ):
+        
+        if self.overlay_visible:
+            return
+        
+        overlay = self.get_vision_overlay()
+
+        self.overlay_visible = True
+
+        overlay.show_message(
+            text,
+            title
+        )
 
 
 overlay_manager = OverlayManager()
