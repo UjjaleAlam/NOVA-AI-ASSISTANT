@@ -1,74 +1,62 @@
+from core.vision.layout_analyzer import layout_analyzer
+from core.vision.content_classifier import content_classifier
+
+
 class VisionEngine:
 
-    def clean_text(
+    def process(
         self,
-        text
+        ocr_blocks
     ):
-        if not text:
-            return ""
 
-        lines = []
+        blocks = self.clean_blocks(ocr_blocks)
+
+        blocks = layout_analyzer.analyze(blocks)
+
+        blocks = content_classifier.classify(blocks)
+
+        return blocks
+
+    # ==========================================
+    # CLEAN OCR BLOCKS
+    # ==========================================
+
+    def clean_blocks(
+        self,
+        blocks
+    ):
+
+        cleaned = []
         seen = set()
 
-        for line in text.splitlines():
-            line = line.strip()
+        for block in blocks:
 
-            if not line:
+            text = block["text"].strip()
+
+            if not text:
                 continue
 
-            if line in seen:
+            if text in seen:
                 continue
 
-            seen.add(line)
+            seen.add(text)
 
-            lines.append(line)
+            new_block = block.copy()
+            new_block["text"] = text
 
-        return "\n".join(lines)
+            cleaned.append(new_block)
 
-    def summarize_text(
+        return cleaned
+
+    # ==========================================
+    # FUTURE FEATURES
+    # ==========================================
+
+    def summarize(
         self,
-        text
+        perception
     ):
         pass
-
-    def detect_application(
-            self,
-            window_title
-    ):
-        if not window_title:
-            return "unknown"
-
-        title = window_title.lower()
-        applications = {
-
-            "visual studio code": "vscode",
-            "code": "vscode",
-
-            "chrome": "chrome",
-            "edge": "edge",
-            "firefox": "firefox",
-
-            "explorer": "explorer",
-            "file explorer": "explorer",
-
-            "terminal": "terminal",
-            "powershell": "terminal",
-            "command prompt": "terminal",
-            "cmd": "terminal",
-
-            "notepad": "notepad",
-            "word": "word",
-            "excel": "excel",
-            "powerpoint": "powerpoint",
-    
-        }
-
-        for keyword, app in applications.items():
-
-            if keyword in title:
-                return app
-
-        return "unknown"
 
 
 vision_engine = VisionEngine()

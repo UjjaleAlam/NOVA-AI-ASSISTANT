@@ -2,29 +2,32 @@ class LayoutAnalyzer:
 
     def analyze(
         self,
-        text
+        ocr_blocks
     ):
-        if not text:
-            return[]
 
-        blocks = []
-        current_block = []
+        if not ocr_blocks:
+            return []
 
-        for line in text.splitlines():
-            line = line.strip()
+        # Sort from top to bottom, then left to right
+        sorted_blocks = sorted(
+            ocr_blocks,
+            key=lambda block: (
+                block["bbox"]["top"],
+                block["bbox"]["left"]
+            )
+        )
 
-            if not line:
-
-                if current_block:
-                    blocks.append(current_block)
-                    current_block = []
-                continue
-
-            current_block.append(line)
-
-        if current_block:
-            blocks.append(current_block)
-        return blocks
+        return [
+            {
+                "text": [block["text"]],
+                "bbox": block["bbox"],
+                "center": block["center"],
+                "width": block["width"],
+                "height": block["height"],
+                "confidence": block["confidence"]
+            }
+            for block in sorted_blocks
+        ]
 
 
 layout_analyzer = LayoutAnalyzer()

@@ -7,19 +7,17 @@ class ContentClassifier:
         self,
         blocks
     ):
+
         classified = []
 
         for block in blocks:
-            if isinstance(block, dict):
-                lines = block["text"]
 
-            else:
-                lines = block
-
+            lines = block["text"]
             text = "\n".join(lines)
+
             content_type = "text"
 
-            #code
+            # Error detection
             if re.search(
                 r"(traceback|exception|error|failed)",
                 text,
@@ -27,20 +25,19 @@ class ContentClassifier:
             ):
                 content_type = "error"
 
-            #table
-            elif len(lines) >= 3 and all(
-                len(line.split()) >= 2
-                for line in lines
+            # Table detection
+            elif (
+                len(lines) >= 3
+                and all(len(line.split()) >= 2 for line in lines)
             ):
-                content_type = "error"
+                content_type = "table"
 
-            classified.append(
-                {
-                    "text": lines,
-                    "type": content_type
-                }
-            )
+            new_block = block.copy()
+            new_block["type"] = content_type
+
+            classified.append(new_block)
 
         return classified
+
 
 content_classifier = ContentClassifier()
