@@ -6,6 +6,9 @@ from PySide6.QtWidgets import QApplication
 from core.voice_worker import create_voice_thread
 from core.command_dispatcher import CommandDispatcher
 from core.signal_bus import signal_bus
+from core.logging_config import setup_logging, get_logger
+from core.monitor import system_monitor
+from core.recovery import recovery_manager
 
 from ui.overlay_manager import overlay_manager
 
@@ -16,6 +19,9 @@ class NovaApplication:
 
     def __init__(self):
 
+        self.logger = get_logger("application")
+        setup_logging()
+        
         self.app = QApplication.instance()
 
         if self.app is None:
@@ -44,6 +50,17 @@ class NovaApplication:
         signal_bus.hide_overlay.connect(
             overlay_manager.hide
         )
+        
+        system_monitor.register_callback(self._on_system_issue)
+        system_monitor.start()
+        
+        self.logger.info("Nova application initialized")
+
+    # =====================================================
+
+    def _on_system_issue(self, issue):
+        self.logger.warning(f"System issue detected: {issue}")
+        signal_bus.speak.emit(f"System warning: {issue}")
 
     # =====================================================
 
@@ -59,6 +76,9 @@ class NovaApplication:
 
     def shutdown(self):
 
+        self.logger.info("Shutting down Nova...")
+        system_monitor.stop()
+        
         if self.voice_worker:
 
             self.voice_worker.stop()

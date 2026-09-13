@@ -14,29 +14,32 @@ Rules:
 """
 
 
-def ask_jarvis(prompt):
+def ask_nova(prompt):
 
     # ---------- AI ----------
 
     start = time.time()
 
-    response = ollama.chat(
-        model="qwen3:8b",
-        options={
-            "num_predict": 80,
-            "temperature": 0.5
-        },
-        messages=[
-            {
-                "role": "system",
-                "content": SYSTEM_PROMPT
+    try:
+        response = ollama.chat(
+            model="qwen3:8b",
+            options={
+                "num_predict": 80,
+                "temperature": 0.5
             },
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ]
-    )
+            messages=[
+                {
+                    "role": "system",
+                    "content": SYSTEM_PROMPT
+                },
+                {
+                    "role": "user",
+                    "content": prompt
+                }
+            ]
+        )
+    except Exception as e:
+        return f"AI service unavailable: {e}"
 
     print(
         f"AI Response Time: {time.time() - start:.2f}s"
@@ -44,7 +47,11 @@ def ask_jarvis(prompt):
 
     answer = response["message"]["content"]
 
-    if "</think>" in answer:
-        answer = answer.split("</think>")[-1]
+    # qwen3 models put response in 'thinking' field when content is empty
+    if not answer and response["message"].get("thinking"):
+        answer = response["message"]["thinking"]
+
+    if "回答" in answer:
+        answer = answer.split("回答")[-1]
 
     return answer.strip()

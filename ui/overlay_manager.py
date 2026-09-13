@@ -2,6 +2,11 @@ from collections import deque
 
 from ui.overlays.selection_overlay import SelectionOverlay
 from ui.overlays.vision_overlay import VisionOverlay
+from ui.widgets.widget_framework import (
+    get_widget, show_file_results, show_system_info, show_notification,
+    show_progress, show_text, WidgetType
+)
+
 
 class OverlayManager:
 
@@ -38,49 +43,32 @@ class OverlayManager:
         title="Files"
     ):
 
-        self.queue.append(
-
-            (
-                items,
-                callback,
-                title
-            )
-
-        )
-
-        self.process_queue()
+        # Use new widget framework for file results
+        show_file_results(items, callback, title)
 
     # ======================================================
 
-    def process_queue(self):
+    def show_system_info(self):
+        """Show system information widget."""
+        show_system_info()
 
-        if self.overlay_visible:
+    # ======================================================
 
-            return
+    def show_notification(self, message: str, icon: str = "ℹ", color: str = "#2E7DFF", timeout: int = 5):
+        """Show a toast notification."""
+        show_notification(message, icon, color, timeout)
 
-        if not self.queue:
+    # ======================================================
 
-            return
+    def show_progress(self, title: str = "Processing..."):
+        """Show progress widget and return it for updates."""
+        return show_progress(title)
 
-        items, callback, title = self.queue.popleft()
+    # ======================================================
 
-        overlay = self.get_overlay()
-
-        self.overlay_visible = True
-
-        print("Opening SelecttionOverlay...")
-
-        overlay.show_results(
-
-            items,
-
-            callback=callback,
-
-            title=title
-
-        )
-
-        print("SelectionOverlay opened")
+    def show_text(self, text: str, title: str = "Content"):
+        """Show text display widget."""
+        show_text(text, title)
 
     # ======================================================
 

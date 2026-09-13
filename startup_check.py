@@ -1,16 +1,23 @@
 import speech_recognition as sr
-import pyttsx3
 import ollama
 import socket
+import asyncio
+import edge_tts
+
+async def test_edge_tts():
+    communicate = edge_tts.Communicate("Test", "en-US-AndrewNeural")
+    await communicate.save("test_tts.mp3")
+    import os
+    os.remove("test_tts.mp3")
 
 def startup_check():
 
-    print("\n===== JARVIS STARTUP CHECK =====\n")
+    print("\n===== NOVA STARTUP CHECK =====\n")
 
-    # Speaker Test
+    # Speaker Test (Edge TTS)
     try:
-        engine = pyttsx3.init()
-        print("✓ Speaker detected")
+        asyncio.run(test_edge_tts())
+        print("✓ Speaker detected (Edge TTS)")
     except Exception as e:
         print("✗ Speaker Error:", e)
 

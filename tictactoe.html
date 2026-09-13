@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tic Tac Toe</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding: 2rem; background: #f5f5f5; }
+    h1 { margin-bottom: 1rem; color: #333; }
+    .status { font-size: 1.5rem; margin-bottom: 1rem; font-weight: 500; }
+    .board { display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); gap: 4px; background: #333; border: 4px solid #333; }
+    .cell { display: flex; align-items: center; justify-content: center; background: #fff; font-size: 3rem; font-weight: bold; cursor: pointer; user-select: none; transition: background 0.1s; }
+    .cell:hover { background: #f0f0f0; }
+    .cell.x { color: #e74c3c; }
+    .cell.o { color: #3498db; }
+    .cell.win { background: #2ecc71; color: #fff; }
+    button { margin-top: 1.5rem; padding: 0.75rem 1.5rem; font-size: 1rem; background: #333; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #555; }
+  </style>
+</head>
+<body>
+  <h1>Tic Tac Toe</h1>
+  <div class="status" id="status">Player X's turn</div>
+  <div class="board" id="board"></div>
+  <button id="reset">New Game</button>
+
+  <script>
+    const board = document.getElementById('board');
+    const status = document.getElementById('status');
+    const resetBtn = document.getElementById('reset');
+    const winPatterns = [
+      [0,1,2],[3,4,5],[6,7,8],
+      [0,3,6],[1,4,7],[2,5,8],
+      [0,4,8],[2,4,6]
+    ];
+
+    let cells = [];
+    let currentPlayer = 'X';
+    let gameState = ['','','','','','','','',''];
+    let gameActive = true;
+
+    function init() {
+      board.innerHTML = '';
+      cells = [];
+      gameState = ['','','','','','','','',''];
+      currentPlayer = 'X';
+      gameActive = true;
+      status.textContent = "Player X's turn";
+      status.style.color = '#333';
+
+      for (let i = 0; i < 9; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.dataset.index = i;
+        cell.addEventListener('click', handleClick);
+        board.appendChild(cell);
+        cells.push(cell);
+      }
+    }
+
+    function handleClick(e) {
+      const index = parseInt(e.target.dataset.index);
+      if (gameState[index] !== '' || !gameActive) return;
+
+      gameState[index] = currentPlayer;
+      e.target.textContent = currentPlayer;
+      e.target.classList.add(currentPlayer.toLowerCase());
+
+      if (checkWin()) {
+        highlightWin();
+        status.textContent = `Player ${currentPlayer} wins!`;
+        status.style.color = '#2ecc71';
+        gameActive = false;
+        return;
+      }
+
+      if (!gameState.includes('')) {
+        status.textContent = "It's a draw!";
+        status.style.color = '#f39c12';
+        gameActive = false;
+        return;
+      }
+
+      currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+      status.textContent = `Player ${currentPlayer}'s turn`;
+    }
+
+    function checkWin() {
+      return winPatterns.some(pattern => {
+        const [a,b,c] = pattern;
+        return gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c];
+      });
+    }
+
+    function highlightWin() {
+      winPatterns.forEach(pattern => {
+        const [a,b,c] = pattern;
+        if (gameState[a] && gameState[a] === gameState[b] && gameState[a] === gameState[c]) {
+          cells[a].classList.add('win');
+          cells[b].classList.add('win');
+          cells[c].classList.add('win');
+        }
+      });
+    }
+
+    resetBtn.addEventListener('click', init);
+
+    init();
+  </script>
+</body>
+</html>

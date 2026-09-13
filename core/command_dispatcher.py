@@ -1,7 +1,7 @@
 from PySide6.QtCore import QObject, Slot
 
 from commands import run_command
-from brain import ask_jarvis
+from brain import ask_nova
 
 from core.voice_manager import voice_manager
 from core.signal_bus import signal_bus
@@ -53,7 +53,7 @@ class CommandDispatcher(QObject):
 
             return
 
-        answer = ask_jarvis(command)
+        answer = ask_nova(command)
 
         answer = str(answer)
 

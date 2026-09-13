@@ -1,7 +1,7 @@
 from listener import listen
 from voice import speak
 from commands import run_command
-from brain import ask_jarvis
+from brain import ask_nova
 from startup_assistant import startup_message
 from PySide6.QtWidgets import QApplication
 import sys
@@ -66,7 +66,7 @@ while True:
 
         continue
 
-    answer = ask_jarvis(command)
+    answer = ask_nova(command)
 
     answer = str(answer)
 
@@ -77,6 +77,19 @@ while True:
 
     print("Nova:", answer)
 
-    speak(answer[:200])
+    # Trim at sentence boundary to avoid cutting mid-sentence
+    def trim_at_sentence(text, max_len=200):
+        if len(text) <= max_len:
+            return text
+        trimmed = text[:max_len]
+        last_period = trimmed.rfind('.')
+        last_question = trimmed.rfind('?')
+        last_exclaim = trimmed.rfind('!')
+        last_sentence_end = max(last_period, last_question, last_exclaim)
+        if last_sentence_end > 0:
+            return trimmed[:last_sentence_end + 1]
+        return trimmed
+
+    speak(trim_at_sentence(answer))
 
     app.processEvents()

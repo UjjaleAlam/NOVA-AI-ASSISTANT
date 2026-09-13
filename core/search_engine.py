@@ -10,6 +10,33 @@ class SearchEngine:
 
         cursor = conn.cursor()
 
+        # Try FTS5 first for instant search
+        if search_filter.has_keyword() and not search_filter.has_extension_filter() and search_filter.min_size is None and search_filter.max_size is None:
+            try:
+                cursor.execute(
+                    """
+                    SELECT
+                        files.name,
+                        files.path,
+                        files.extension
+                    FROM files_fts
+                    JOIN files ON files.id = files_fts.rowid
+                    WHERE files_fts MATCH ?
+                    ORDER BY rank
+                    LIMIT ?
+                    """,
+                    (
+                        f"{search_filter.keyword}*",
+                        search_filter.limit
+                    )
+                )
+                rows = cursor.fetchall()
+                conn.close()
+                return rows
+            except Exception:
+                pass  # Fall back to regular search
+
+        # Regular search with filters
         sql = """
         SELECT
             name,
@@ -69,7 +96,7 @@ class SearchEngine:
             )
 
         # -----------------------------
-        # Keyword
+        # Keyword (LIKE fallback)
         # -----------------------------
 
         if search_filter.has_keyword():

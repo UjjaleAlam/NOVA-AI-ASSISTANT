@@ -1,10 +1,13 @@
-from pprint import pprint
+from PIL import Image
 
-from core.vision.screen_capture import screen_capture
-from core.vision.ocr_engine import ocr_engine
+# Open the original image
+img = Image.open('!base.png')
 
-image = screen_capture.capture_screen()
+# Define the coordinates for the top-left logo (Left, Top, Right, Bottom)
+# Note: These are approximate pixel coordinates based on the image provided
+crop_area = (20, 20, 415, 125) 
 
-blocks = ocr_engine.extract_blocks(image)
-
-pprint(blocks[:5])
+# Crop and save the image
+logo = img.crop(crop_area)
+logo.save('extracted_logo.png')
+print("Logo extracted successfully!")
