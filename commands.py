@@ -3345,4 +3345,104 @@ def run_command(query):
             return f"Deleted automation {rid}."
         return f"Failed to delete automation {rid}."
 
+    # ============================
+    # MULTI-AGENT SYSTEM (Phase 36)
+    # ============================
+
+    if query in ["agent status", "multi agent status", "show agents"]:
+        from core.multi_agent import registry, ma_debug
+        return ma_debug()
+
+    if query.startswith("agent task ") or query.startswith("submit task "):
+        task_desc = query.replace("agent task ", "").replace("submit task ", "").strip()
+        from core.multi_agent import create_task
+        task_id = create_task("execute", {"description": task_desc})
+        return f"Submitted task: {task_id}"
+
+    if query.startswith("agent plan "):
+        goal = query.replace("agent plan ", "").strip()
+        from core.multi_agent import create_task
+        task_id = create_task("plan", {"type": "decompose", "goal": goal})
+        return f"Planning task submitted: {task_id}"
+
+    if query.startswith("agent research "):
+        topic = query.replace("agent research ", "").strip()
+        from core.multi_agent import create_task
+        task_id = create_task("research", {"type": "web_search", "query": topic})
+        return f"Research task submitted: {task_id}"
+
+    if query.startswith("agent review "):
+        import pyperclip
+        try:
+            code = pyperclip.paste()
+            if not code or len(code) < 10:
+                return "No code in clipboard. Copy code first."
+        except:
+            return "Could not access clipboard."
+        from core.multi_agent import create_task
+        task_id = create_task("review", {"type": "code_review", "code": code})
+        return f"Code review task submitted: {task_id}"
+
+    if query in ["agent dashboard", "multi agent dashboard"]:
+        from core.multi_agent import get_dashboard
+        dash = get_dashboard()
+        return (f"Multi-Agent Dashboard:\n"
+                f"  Overdue: {dash['overdue_tasks']}\n"
+                f"  Today: {dash['today_tasks']}\n"
+                f"  Events: {dash['today_events']}\n"
+                f"  Meetings: {dash['upcoming_meetings']}\n"
+                f"  Inbox: {dash['inbox_count']}\n"
+                f"  Habits due: {dash['habits_due']}\n"
+                f"  Energy: {dash['energy_trend']} ({dash['avg_energy']:.0f}/10)")
+
+    if query in ["agent briefing", "morning briefing", "daily briefing"]:
+        from core.multi_agent import morning_briefing
+        return morning_briefing()
+
+    if query in ["agent schedule", "daily schedule", "plan my day"]:
+        from core.multi_agent import suggest_schedule
+        sched = suggest_schedule()
+        if not sched["scheduled_tasks"]:
+            return "No tasks scheduled for today."
+        output = f"Schedule for {sched['date']} ({sched['available_hours']}h available):\n"
+        for t in sched["scheduled_tasks"]:
+            output += f"  • {t['title']} ({t['duration_min']}min, priority {t['priority']})\n"
+        output += f"Buffer: {sched['buffer_minutes']}min"
+        return output
+
+    if query.startswith("agent workflow ") or query.startswith("create workflow "):
+        parts = query.replace("agent workflow ", "").replace("create workflow ", "").split("|")
+        if len(parts) >= 3:
+            name = parts[0].strip()
+            desc = parts[1].strip()
+            steps_json = parts[2].strip()
+            try:
+                steps = json.loads(steps_json)
+                from core.multi_agent import workflow_engine
+                wf_id = workflow_engine.create_workflow(name, desc, steps)
+                return f"Created workflow: {wf_id}"
+            except json.JSONDecodeError:
+                return "Invalid steps JSON format."
+        return "Format: 'create workflow <name> | <description> | <steps_json>'"
+
+    if query.startswith("run workflow "):
+        wf_id = query.replace("run workflow ", "").strip()
+        from core.multi_agent import workflow_engine
+        exec_id = workflow_engine.execute_workflow(wf_id)
+        return f"Started workflow execution: {exec_id}"
+
+    if query in ["list workflows", "workflows list"]:
+        from core.multi_agent import get_ma_connection
+        conn = get_ma_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, name, description FROM workflows WHERE is_active = 1")
+        rows = cursor.fetchall()
+        conn.close()
+        if not rows:
+            return "No workflows defined."
+        output = "Workflows:\n"
+        for r in rows:
+            output += f"  • {r[0]}: {r[1]} - {r[2]}\n"
+        return output
+
     return None

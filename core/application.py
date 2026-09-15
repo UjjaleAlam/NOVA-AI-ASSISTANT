@@ -9,6 +9,7 @@ from core.signal_bus import signal_bus
 from core.logging_config import setup_logging, get_logger
 from core.monitor import system_monitor
 from core.recovery import recovery_manager
+from core.multi_agent import orchestrator
 
 from ui.overlay_manager import overlay_manager
 
@@ -54,6 +55,9 @@ class NovaApplication:
         system_monitor.register_callback(self._on_system_issue)
         system_monitor.start()
         
+        # Start multi-agent orchestrator
+        orchestrator.start()
+        
         self.logger.info("Nova application initialized")
 
     # =====================================================
@@ -78,6 +82,9 @@ class NovaApplication:
 
         self.logger.info("Shutting down Nova...")
         system_monitor.stop()
+        
+        # Stop multi-agent orchestrator
+        orchestrator.stop()
         
         if self.voice_worker:
 
