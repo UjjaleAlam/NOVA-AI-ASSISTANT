@@ -94,3 +94,21 @@ downloads/
 database/file_index.db
 
 database/*.db
+
+# ==========================
+# NOVA Runtime Databases
+# ==========================
+
+database/
+chroma_db/
+renders/
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# ==========================
+# NOVA Backups
+# ==========================
+
+backups/
